@@ -438,11 +438,12 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
                        'readiness_score'    value b.readiness_score,
                        'readiness_status'   value b.readiness_status
                        absent on null),
-                   'files'           value l_files   format json,
+                   -- most important first: the Ask Claude chat may only get the first ~30k chars
+                   'reconciliations' value l_recon   format json,
                    'missing_objects' value l_missing format json,
-                   'column_profile'  value l_profile format json,
+                   'files'           value l_files   format json,
                    'issue_summary'   value l_issues  format json,
-                   'reconciliations' value l_recon   format json
+                   'column_profile'  value l_profile format json
                    absent on null returning clob)
           into l_json
           from xxx_fv_batches b
