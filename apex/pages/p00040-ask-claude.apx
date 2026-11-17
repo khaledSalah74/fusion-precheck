@@ -1,0 +1,117 @@
+page 40 (
+    name: Ask Claude
+    alias: ASK-CLAUDE
+    title: Ask Claude
+    pageGroup: @batch
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-user
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Ask Claude
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region chat (
+        name: Chat
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P40_BATCH_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @chat
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    computation set-current-batch (
+        itemName: FV_BATCH_ID
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        computation {
+            type: item
+            itemName: P40_BATCH_ID
+        }
+    )
+
+    computation batch-context (
+        itemName: FV_BATCH_CONTEXT
+        execution {
+            sequence: 20
+            point: beforeHeader
+        }
+        computation {
+            type: expression
+            language: plsql
+            plsqlExpression: dbms_lob.substr(xxx_fv_ai_pkg.get_batch_context(:P40_BATCH_ID), 30000, 1)
+        }
+    )
+
+    dynamicAction show-assistant (
+        name: Show AI Assistant
+        execution {
+            sequence: 10
+        }
+        when {
+            event: ready
+        }
+
+        action show-ai-assistant (
+            action: showAiAssistant
+            execution {
+                sequence: 10
+            }
+            appearance {
+                displayAs: inline
+                containerSelector: #chat
+            }
+            genAI {
+                agent: @fv-batch-analyst
+            }
+            quickActions {
+                message1: Top 5 blocking issues
+                message2: Explain the AP to GL difference
+            }
+        )
+    )
+
+)

@@ -1,0 +1,215 @@
+page 93 (
+    name: Error Log
+    alias: ERROR-LOG
+    title: Error Log
+    pageGroup: @administration
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-admin
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Error Log
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region error-log (
+        name: Error Log
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select log_id,
+                       log_ts,
+                       module,
+                       log_key,
+                       err_stack,
+                       backtrace,
+                       call_stack,
+                       db_user
+                  from xxx_fv_error_log
+                 order by log_ts desc
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        messages {
+            whenNoDataFound: No errors logged.
+        }
+
+        column LOG_ID (
+            type: plainText
+            heading {
+                heading: Id
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column LOG_TS (
+            type: plainText
+            heading {
+                heading: Time
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: DATE
+            }
+        )
+
+        column MODULE (
+            type: plainText
+            heading {
+                heading: Module
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column LOG_KEY (
+            type: plainText
+            heading {
+                heading: Key
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column ERR_STACK (
+            type: plainText
+            heading {
+                heading: Error
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column BACKTRACE (
+            type: plainText
+            heading {
+                heading: Backtrace
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column CALL_STACK (
+            type: plainText
+            heading {
+                heading: Call stack
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column DB_USER (
+            type: plainText
+            heading {
+                heading: DB user
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        savedReport primary (
+            visibility: primaryDefault
+            view {
+                rowsPerPage: 50
+            }
+
+            displayColumn LOG_ID (
+                sequence: 10
+            )
+
+            displayColumn LOG_TS (
+                sequence: 20
+            )
+
+            displayColumn MODULE (
+                sequence: 30
+            )
+
+            displayColumn LOG_KEY (
+                sequence: 40
+            )
+
+            displayColumn ERR_STACK (
+                sequence: 50
+            )
+
+            displayColumn BACKTRACE (
+                sequence: 60
+            )
+
+            displayColumn CALL_STACK (
+                sequence: 70
+            )
+
+            displayColumn DB_USER (
+                sequence: 80
+            )
+        )
+    )
+
+)

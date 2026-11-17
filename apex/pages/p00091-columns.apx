@@ -1,0 +1,814 @@
+page 91 (
+    name: Columns
+    alias: COLUMNS
+    title: Columns
+    pageGroup: @administration
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-admin
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Columns
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region filter (
+        name: Object
+        type: staticContent
+        layout {
+            sequence: 15
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region columns (
+        name: Columns
+        type: interactiveGrid
+        source {
+            location: localDatabase
+            tableName: XXX_FV_COLUMNS
+            whereClause: object_code = :P91_OBJECT_CODE
+            pageItemsToSubmit: P91_OBJECT_CODE
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+        pagination {
+            type: page
+        }
+
+        column APEX$ROW_ACTION (
+            type: actionsMenu
+            layout {
+                sequence: 1
+            }
+        )
+
+        column APEX$ROW_SELECTOR (
+            type: rowSelector
+            layout {
+                sequence: 2
+            }
+        )
+
+        column OBJECT_CODE (
+            type: selectList
+            heading {
+                heading: Object
+            }
+            layout {
+                sequence: 10
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery: select object_name || ' (' || object_code || ')' d, object_code r from xxx_fv_objects order by load_order
+                displayNullValue: true
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: OBJECT_CODE
+                dataType: varchar2
+                primaryKey: true
+            }
+        )
+
+        column COLUMN_NAME (
+            type: textField
+            heading {
+                heading: Column
+            }
+            layout {
+                sequence: 20
+            }
+            validation {
+                valueRequired: true
+                maxLength: 60
+            }
+            source {
+                databaseColumn: COLUMN_NAME
+                dataType: varchar2
+                primaryKey: true
+            }
+        )
+
+        column COLUMN_SEQ (
+            type: numberField
+            heading {
+                heading: Seq
+            }
+            layout {
+                sequence: 30
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: COLUMN_SEQ
+                dataType: number
+            }
+        )
+
+        column DATA_TYPE (
+            type: selectList
+            heading {
+                heading: Type
+            }
+            layout {
+                sequence: 40
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery: select 'VARCHAR2' d, 'VARCHAR2' r from dual union all select 'NUMBER', 'NUMBER' from dual union all select 'DATE', 'DATE' from dual
+                displayNullValue: true
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: DATA_TYPE
+                dataType: varchar2
+            }
+        )
+
+        column MAX_LENGTH (
+            type: numberField
+            heading {
+                heading: Max length
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                databaseColumn: MAX_LENGTH
+                dataType: number
+            }
+        )
+
+        column DATE_FORMAT (
+            type: textField
+            heading {
+                heading: Date format
+            }
+            layout {
+                sequence: 60
+            }
+            validation {
+                maxLength: 20
+            }
+            source {
+                databaseColumn: DATE_FORMAT
+                dataType: varchar2
+            }
+        )
+
+        column IS_REQUIRED (
+            type: selectList
+            heading {
+                heading: Required
+            }
+            layout {
+                sequence: 70
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery: select 'Yes' d, 'Y' r from dual union all select 'No', 'N' from dual
+                displayNullValue: true
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: IS_REQUIRED
+                dataType: varchar2
+            }
+        )
+
+        column UNIQUE_KEY_SEQ (
+            type: numberField
+            heading {
+                heading: Unique key seq
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                databaseColumn: UNIQUE_KEY_SEQ
+                dataType: number
+            }
+        )
+
+        column REGEX_PATTERN (
+            type: textField
+            heading {
+                heading: Regex
+            }
+            layout {
+                sequence: 90
+            }
+            validation {
+                maxLength: 400
+            }
+            source {
+                databaseColumn: REGEX_PATTERN
+                dataType: varchar2
+            }
+        )
+
+        column PATTERN_HINT (
+            type: textField
+            heading {
+                heading: Pattern hint
+            }
+            layout {
+                sequence: 100
+            }
+            validation {
+                maxLength: 200
+            }
+            source {
+                databaseColumn: PATTERN_HINT
+                dataType: varchar2
+            }
+        )
+
+        column IS_SENSITIVE (
+            type: selectList
+            heading {
+                heading: Sensitive
+            }
+            layout {
+                sequence: 110
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery: select 'Yes' d, 'Y' r from dual union all select 'No', 'N' from dual
+                displayNullValue: true
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: IS_SENSITIVE
+                dataType: varchar2
+            }
+        )
+
+        column DESCRIPTION (
+            type: textField
+            heading {
+                heading: Description
+            }
+            layout {
+                sequence: 120
+            }
+            validation {
+                maxLength: 500
+            }
+            source {
+                databaseColumn: DESCRIPTION
+                dataType: varchar2
+            }
+        )
+
+        savedReport primary (
+            visibility: primary
+            view {
+                default: grid
+                rowsPerPage: 50
+            }
+
+            displayColumn (
+                column: @OBJECT_CODE
+                layout {
+                    sequence: 1
+                }
+            )
+
+            displayColumn (
+                column: @COLUMN_NAME
+                layout {
+                    sequence: 2
+                }
+            )
+
+            displayColumn (
+                column: @COLUMN_SEQ
+                layout {
+                    sequence: 3
+                }
+            )
+
+            displayColumn (
+                column: @DATA_TYPE
+                layout {
+                    sequence: 4
+                }
+            )
+
+            displayColumn (
+                column: @MAX_LENGTH
+                layout {
+                    sequence: 5
+                }
+            )
+
+            displayColumn (
+                column: @DATE_FORMAT
+                layout {
+                    sequence: 6
+                }
+            )
+
+            displayColumn (
+                column: @IS_REQUIRED
+                layout {
+                    sequence: 7
+                }
+            )
+
+            displayColumn (
+                column: @UNIQUE_KEY_SEQ
+                layout {
+                    sequence: 8
+                }
+            )
+
+            displayColumn (
+                column: @REGEX_PATTERN
+                layout {
+                    sequence: 9
+                }
+            )
+
+            displayColumn (
+                column: @PATTERN_HINT
+                layout {
+                    sequence: 10
+                }
+            )
+
+            displayColumn (
+                column: @IS_SENSITIVE
+                layout {
+                    sequence: 11
+                }
+            )
+
+            displayColumn (
+                column: @DESCRIPTION
+                layout {
+                    sequence: 12
+                }
+            )
+        )
+    )
+
+    region allowed-values (
+        name: Allowed values
+        type: interactiveGrid
+        source {
+            location: localDatabase
+            tableName: XXX_FV_COLUMN_VALUES
+            whereClause: object_code = :P91_OBJECT_CODE
+            pageItemsToSubmit: P91_OBJECT_CODE
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+        pagination {
+            type: page
+        }
+
+        column APEX$ROW_ACTION (
+            type: actionsMenu
+            layout {
+                sequence: 1
+            }
+        )
+
+        column APEX$ROW_SELECTOR (
+            type: rowSelector
+            layout {
+                sequence: 2
+            }
+        )
+
+        column OBJECT_CODE (
+            type: selectList
+            heading {
+                heading: Object
+            }
+            layout {
+                sequence: 10
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery: select object_name || ' (' || object_code || ')' d, object_code r from xxx_fv_objects order by load_order
+                displayNullValue: true
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: OBJECT_CODE
+                dataType: varchar2
+                primaryKey: true
+            }
+        )
+
+        column COLUMN_NAME (
+            type: textField
+            heading {
+                heading: Column
+            }
+            layout {
+                sequence: 20
+            }
+            validation {
+                valueRequired: true
+                maxLength: 60
+            }
+            source {
+                databaseColumn: COLUMN_NAME
+                dataType: varchar2
+                primaryKey: true
+            }
+        )
+
+        column ALLOWED_VALUE (
+            type: textField
+            heading {
+                heading: Allowed value
+            }
+            layout {
+                sequence: 30
+            }
+            validation {
+                valueRequired: true
+                maxLength: 200
+            }
+            source {
+                databaseColumn: ALLOWED_VALUE
+                dataType: varchar2
+                primaryKey: true
+            }
+        )
+
+        column MEANING (
+            type: textField
+            heading {
+                heading: Meaning
+            }
+            layout {
+                sequence: 40
+            }
+            validation {
+                maxLength: 200
+            }
+            source {
+                databaseColumn: MEANING
+                dataType: varchar2
+            }
+        )
+
+        savedReport primary (
+            visibility: primary
+            view {
+                default: grid
+                rowsPerPage: 50
+            }
+
+            displayColumn (
+                column: @OBJECT_CODE
+                layout {
+                    sequence: 1
+                }
+            )
+
+            displayColumn (
+                column: @COLUMN_NAME
+                layout {
+                    sequence: 2
+                }
+            )
+
+            displayColumn (
+                column: @ALLOWED_VALUE
+                layout {
+                    sequence: 3
+                }
+            )
+
+            displayColumn (
+                column: @MEANING
+                layout {
+                    sequence: 4
+                }
+            )
+        )
+    )
+
+    region aliases (
+        name: Header aliases
+        type: interactiveGrid
+        source {
+            location: localDatabase
+            tableName: XXX_FV_COLUMN_ALIASES
+            whereClause: object_code = :P91_OBJECT_CODE
+            pageItemsToSubmit: P91_OBJECT_CODE
+        }
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+        pagination {
+            type: page
+        }
+
+        column APEX$ROW_ACTION (
+            type: actionsMenu
+            layout {
+                sequence: 1
+            }
+        )
+
+        column APEX$ROW_SELECTOR (
+            type: rowSelector
+            layout {
+                sequence: 2
+            }
+        )
+
+        column OBJECT_CODE (
+            type: selectList
+            heading {
+                heading: Object
+            }
+            layout {
+                sequence: 10
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery: select object_name || ' (' || object_code || ')' d, object_code r from xxx_fv_objects order by load_order
+                displayNullValue: true
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: OBJECT_CODE
+                dataType: varchar2
+                primaryKey: true
+            }
+        )
+
+        column ALIAS_NORM (
+            type: textField
+            heading {
+                heading: Alias (normalised)
+            }
+            layout {
+                sequence: 20
+            }
+            validation {
+                valueRequired: true
+                maxLength: 100
+            }
+            source {
+                databaseColumn: ALIAS_NORM
+                dataType: varchar2
+                primaryKey: true
+            }
+        )
+
+        column COLUMN_NAME (
+            type: textField
+            heading {
+                heading: Column
+            }
+            layout {
+                sequence: 30
+            }
+            validation {
+                valueRequired: true
+                maxLength: 60
+            }
+            source {
+                databaseColumn: COLUMN_NAME
+                dataType: varchar2
+            }
+        )
+
+        savedReport primary (
+            visibility: primary
+            view {
+                default: grid
+                rowsPerPage: 50
+            }
+
+            displayColumn (
+                column: @OBJECT_CODE
+                layout {
+                    sequence: 1
+                }
+            )
+
+            displayColumn (
+                column: @ALIAS_NORM
+                layout {
+                    sequence: 2
+                }
+            )
+
+            displayColumn (
+                column: @COLUMN_NAME
+                layout {
+                    sequence: 3
+                }
+            )
+        )
+    )
+
+    pageItem P91_OBJECT_CODE (
+        type: selectList
+        label {
+            label: Object
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @filter
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery: select object_name || ' (' || object_code || ')' d, object_code r from xxx_fv_objects order by load_order
+            displayNullValue: true
+            nullDisplayValue: - choose object -
+        }
+        help {
+            helpText: Pick the object whose columns, allowed values and header aliases you want to maintain.
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: Save
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction refresh-grids (
+        name: Refresh grids on object change
+        execution {
+            sequence: 10
+        }
+        when {
+            event: change
+            selectionType: items
+            items: P91_OBJECT_CODE
+        }
+        action refresh-columns (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @columns
+            }
+            execution {
+                sequence: 10
+            }
+        )
+        action refresh-values (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @allowed-values
+            }
+            execution {
+                sequence: 20
+            }
+        )
+        action refresh-aliases (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @aliases
+            }
+            execution {
+                sequence: 30
+            }
+        )
+    )
+
+    process save-columns (
+        name: Save columns
+        type: interactiveGridAutoRowProcessing
+        editableRegion: @columns
+        execution {
+            sequence: 10
+        }
+    )
+
+    process save-values (
+        name: Save allowed-values
+        type: interactiveGridAutoRowProcessing
+        editableRegion: @allowed-values
+        execution {
+            sequence: 20
+        }
+    )
+
+    process save-aliases (
+        name: Save aliases
+        type: interactiveGridAutoRowProcessing
+        editableRegion: @aliases
+        execution {
+            sequence: 30
+        }
+    )
+
+)

@@ -234,12 +234,20 @@ page 2 (
         }
     )
 
-    process close-dialog (
-        name: Close Dialog
-        type: closeDialog
+    branch go-to-batch (
+        name: Go to batch files
         execution {
-            sequence: 50
-            point: afterSubmit
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            target: {
+                page: 10
+                items: {
+                    P10_BATCH_ID: &P2_BATCH_ID.
+                }
+                clearCache: 10
+            }
         }
         serverSideCondition {
             whenButtonPressed: @create

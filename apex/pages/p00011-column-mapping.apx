@@ -1,0 +1,569 @@
+page 11 (
+    name: Column Mapping
+    alias: COLUMN-MAPPING
+    title: Column Mapping
+    pageGroup: @batch
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        width: 1100
+        chained: false
+    }
+    security {
+        authorizationScheme: @fv-user
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    help {
+        helpText: Map each file header to a Fusion column. Only the Mapped column can be changed. Suggest with Claude proposes mappings for unmapped headers using header names and value shapes only.
+    }
+
+    region object (
+        name: Object
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region mapping (
+        name: Mapping
+        type: interactiveGrid
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select fc.file_id,
+                       fc.column_position,
+                       fc.file_header,
+                       fc.sample_shape,
+                       fc.mapped_column,
+                       fc.mapping_source,
+                       case when fc.ai_confidence is not null then round(fc.ai_confidence * 100) || '%' end ai_confidence_pct,
+                       fc.ai_reason
+                  from xxx_fv_file_columns fc
+                 where fc.file_id = :P11_FILE_ID
+                 order by fc.column_position
+                ```
+            pageItemsToSubmit: P11_FILE_ID
+        }
+        layout {
+            sequence: 20
+            slot: contentBody
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                update
+            ]
+        }
+        pagination {
+            type: page
+        }
+
+        column APEX$ROW_SELECTOR (
+            type: rowSelector
+            layout {
+                sequence: 10
+            }
+        )
+
+        column FILE_ID (
+            type: hidden
+            layout {
+                sequence: 20
+            }
+            source {
+                databaseColumn: FILE_ID
+                dataType: number
+                primaryKey: true
+            }
+        )
+
+        column COLUMN_POSITION (
+            type: displayOnly
+            heading {
+                heading: #
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                databaseColumn: COLUMN_POSITION
+                dataType: number
+                primaryKey: true
+            }
+        )
+
+        column FILE_HEADER (
+            type: displayOnly
+            heading {
+                heading: File header
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                databaseColumn: FILE_HEADER
+                dataType: varchar2
+                queryOnly: true
+            }
+        )
+
+        column SAMPLE_SHAPE (
+            type: displayOnly
+            heading {
+                heading: Value shape
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                databaseColumn: SAMPLE_SHAPE
+                dataType: varchar2
+                queryOnly: true
+            }
+        )
+
+        column MAPPED_COLUMN (
+            type: selectList
+            heading {
+                heading: Mapped column
+            }
+            layout {
+                sequence: 60
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select c.column_name || case when c.is_required = 'Y' then ' *' end d,
+                           c.column_name r
+                      from xxx_fv_columns c
+                      join xxx_fv_files f
+                        on f.object_code = c.object_code
+                     where f.file_id = :P11_FILE_ID
+                     order by c.column_seq
+                    ```
+                displayNullValue: true
+                nullDisplayValue: - not mapped -
+            }
+            source {
+                databaseColumn: MAPPED_COLUMN
+                dataType: varchar2
+            }
+        )
+
+        column MAPPING_SOURCE (
+            type: displayOnly
+            heading {
+                heading: Source
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                databaseColumn: MAPPING_SOURCE
+                dataType: varchar2
+                queryOnly: true
+            }
+        )
+
+        column AI_CONFIDENCE_PCT (
+            type: displayOnly
+            heading {
+                heading: AI confidence
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                databaseColumn: AI_CONFIDENCE_PCT
+                dataType: varchar2
+                queryOnly: true
+            }
+        )
+
+        column AI_REASON (
+            type: displayOnly
+            heading {
+                heading: AI reason
+            }
+            layout {
+                sequence: 90
+            }
+            source {
+                databaseColumn: AI_REASON
+                dataType: varchar2
+                queryOnly: true
+            }
+        )
+
+        savedReport primary (
+            visibility: primary
+            view {
+                default: grid
+                rowsPerPage: 50
+            }
+
+            displayColumn (
+                column: @COLUMN_POSITION
+                layout {
+                    sequence: 1
+                }
+            )
+
+            displayColumn (
+                column: @FILE_HEADER
+                layout {
+                    sequence: 2
+                }
+            )
+
+            displayColumn (
+                column: @SAMPLE_SHAPE
+                layout {
+                    sequence: 3
+                }
+            )
+
+            displayColumn (
+                column: @MAPPED_COLUMN
+                layout {
+                    sequence: 4
+                }
+            )
+
+            displayColumn (
+                column: @MAPPING_SOURCE
+                layout {
+                    sequence: 5
+                }
+            )
+
+            displayColumn (
+                column: @AI_CONFIDENCE_PCT
+                layout {
+                    sequence: 6
+                }
+            )
+
+            displayColumn (
+                column: @AI_REASON
+                layout {
+                    sequence: 7
+                }
+            )
+        )
+    )
+
+    region missing-required (
+        name: Required columns still missing
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select k.column_name,
+                       k.description
+                  from xxx_fv_columns k
+                  join xxx_fv_files f
+                    on f.object_code = k.object_code
+                 where f.file_id = :P11_FILE_ID
+                   and k.is_required = 'Y'
+                   and not exists (select 1
+                                     from xxx_fv_file_columns c
+                                    where c.file_id = f.file_id
+                                      and c.mapped_column = k.column_name)
+                 order by k.column_seq
+                ```
+            pageItemsToSubmit: P11_FILE_ID
+        }
+        layout {
+            sequence: 30
+            slot: contentBody
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: All required columns are mapped.
+        }
+
+        column COLUMN_NAME (
+            type: plainText
+            heading {
+                heading: Column
+            }
+            layout {
+                sequence: 10
+            }
+        )
+
+        column DESCRIPTION (
+            type: plainText
+            heading {
+                heading: Description
+            }
+            layout {
+                sequence: 20
+            }
+        )
+    )
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 40
+            slot: REGION_POSITION_03
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P11_FILE_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @object
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P11_OBJECT_CODE (
+        type: selectList
+        label {
+            label: Object
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @object
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select o.object_name || ' (' || o.object_code || ')' d,
+                       o.object_code r
+                  from xxx_fv_objects o
+                 where o.is_enabled = 'Y'
+                 order by o.load_order
+                ```
+            displayNullValue: true
+            nullDisplayValue: - choose object -
+        }
+        help {
+            helpText: The Fusion object this sheet holds. Changing it re-runs the automatic header mapping.
+        }
+    )
+
+    button assign-object (
+        buttonName: ASSIGN_OBJECT
+        label: Assign object
+        layout {
+            sequence: 30
+            region: @object
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button close (
+        buttonName: CLOSE
+        label: Close
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: CLOSE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button suggest (
+        buttonName: SUGGEST
+        label: Suggest with Claude
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-magic
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction close-dialog (
+        name: Close Dialog
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @close
+        }
+
+        action native-dialog-close (
+            action: closeDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+
+    computation default-object (
+        itemName: P11_OBJECT_CODE
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        computation {
+            type: sqlQuerySingleValue
+            sqlQuery:
+                ```sql
+                select object_code from xxx_fv_files where file_id = :P11_FILE_ID
+                ```
+        }
+    )
+
+    process save-mapping (
+        name: Save mapping
+        type: interactiveGridAutoRowProcessing
+        editableRegion: @mapping
+        target {
+            targetType: plsqlCode
+            dmlPlsqlCode:
+                ```plsql
+                xxx_fv_batch_api.set_mapping(:FILE_ID, :COLUMN_POSITION, :MAPPED_COLUMN, :APP_USER);
+                ```
+        }
+        execution {
+            sequence: 10
+        }
+    )
+
+    process assign-object (
+        name: Assign object
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_batch_api.assign_object(:P11_FILE_ID, :P11_OBJECT_CODE, :APP_USER);
+                ```
+        }
+        execution {
+            sequence: 20
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Object assigned and headers re-mapped.
+        }
+        serverSideCondition {
+            whenButtonPressed: @assign-object
+        }
+    )
+
+    process suggest-mapping (
+        name: Suggest with Claude
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    l_status varchar2(1);
+                    l_msg    varchar2(4000);
+                begin
+                    xxx_fv_batch_api.suggest_mapping(:P11_FILE_ID, :APP_USER, l_status, l_msg);
+                    if l_status = 'E' then
+                        apex_error.add_error(p_message          => 'Claude could not suggest a mapping: ' || l_msg,
+                                             p_display_location => apex_error.c_inline_in_notification);
+                    end if;
+                end;
+                ```
+        }
+        execution {
+            sequence: 30
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Claude suggested mappings for the unmapped headers. Review them before validating.
+        }
+        serverSideCondition {
+            whenButtonPressed: @suggest
+        }
+    )
+
+    branch stay (
+        name: Stay on mapping
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            target: {
+                page: 11
+                items: {
+                    P11_FILE_ID: &P11_FILE_ID.
+                }
+            }
+        }
+    )
+
+)

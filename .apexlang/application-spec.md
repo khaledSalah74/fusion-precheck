@@ -19,15 +19,15 @@ Source of structure: `db/01_tables.sql`, `db/07_xxx_fv_batch_api.sql`, live DB `
 
 | Unit | Content | Status |
 | --- | --- | --- |
-| U1 | App shell (name, AI attribute = CLAUDE, ACL role ADMIN, FV_USER/FV_ADMIN, nav menu, breadcrumbs) + Page 1 Batches | in progress |
-| U2 | Page 2 New Batch (modal) | planned |
-| U3 | Page 10 Files & Mapping | planned |
-| U4 | Page 11 Column Mapping (modal) | planned |
-| U5 | Page 20 Validation Results | planned |
-| U6 | Page 21 Row Detail (modal) | planned |
-| U7 | Page 30 AI Report | planned |
-| U8 | AI Agent fv_batch_analyst + Page 40 Ask Claude | planned |
-| U9 | Pages 90-93 Admin | planned |
+| U1 | App shell (name, AI attribute = CLAUDE, ACL role ADMIN, FV_USER/FV_ADMIN, nav menu, breadcrumbs) + Page 1 Batches | done |
+| U2 | Page 2 New Batch (modal) | done |
+| U3 | Page 10 Files & Mapping | done |
+| U4 | Page 11 Column Mapping (modal) | done |
+| U5 | Page 20 Validation Results | done |
+| U6 | Page 21 Row Detail (modal) | done |
+| U7 | Page 30 AI Report | done |
+| U8 | AI Agent fv_batch_analyst + Page 40 Ask Claude | done |
+| U9 | Pages 90-93 Admin | done |
 
 Forward links (page 1 -> 2, 1 -> 10) target pages delivered in later units; navigation entries for admin pages are added with U9.
 

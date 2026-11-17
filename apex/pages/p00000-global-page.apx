@@ -1,4 +1,210 @@
 page 0 (
     name: Global Page
-)
 
+    region batch-header (
+        name: Batch
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select b.batch_name,
+                       b.client_name,
+                       b.target_env,
+                       to_char(b.cutover_date, 'YYYY-MM-DD') cutover_date,
+                       s.status_name,
+                       b.readiness_score,
+                       nvl(b.readiness_status, 'NOT_VALIDATED') readiness_status,
+                       case b.readiness_status
+                           when 'NOT_READY'           then 'u-danger'
+                           when 'READY_WITH_WARNINGS' then 'u-warning'
+                           when 'READY'               then 'u-success'
+                           else 'u-normal'
+                       end readiness_css,
+                       b.line_count,
+                       b.error_count,
+                       b.warning_count,
+                       b.info_count,
+                       to_char(b.last_validated_on, 'YYYY-MM-DD HH24:MI') last_validated_on
+                  from xxx_fv_batches b
+                  join xxx_fv_batch_statuses s
+                    on s.status_code = b.status_code
+                 where b.batch_id = :FV_BATCH_ID
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        serverSideCondition {
+            type: expression
+            language: plsql
+            plsqlExpression: :APP_PAGE_ID in ('10', '20', '30', '40')
+        }
+
+        column BATCH_NAME (
+            type: plainText
+            heading {
+                heading: Batch
+            }
+            layout {
+                sequence: 10
+            }
+        )
+
+        column CLIENT_NAME (
+            type: plainText
+            heading {
+                heading: Client
+            }
+            layout {
+                sequence: 20
+            }
+        )
+
+        column TARGET_ENV (
+            type: plainText
+            heading {
+                heading: Target
+            }
+            layout {
+                sequence: 30
+            }
+        )
+
+        column CUTOVER_DATE (
+            type: plainText
+            heading {
+                heading: Cutover
+            }
+            layout {
+                sequence: 40
+            }
+        )
+
+        column STATUS_NAME (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 50
+            }
+        )
+
+        column READINESS_SCORE (
+            type: plainText
+            heading {
+                heading: Readiness
+            }
+            layout {
+                sequence: 60
+            }
+            columnFormatting {
+                htmlExpression: <span class="t-Badge &READINESS_CSS.">#READINESS_SCORE# #READINESS_STATUS#</span>
+            }
+        )
+
+        column READINESS_STATUS (
+            type: hidden
+            layout {
+                sequence: 61
+            }
+        )
+
+        column READINESS_CSS (
+            type: hidden
+            layout {
+                sequence: 62
+            }
+        )
+
+        column LINE_COUNT (
+            type: plainText
+            heading {
+                heading: Lines
+            }
+            layout {
+                sequence: 70
+            }
+        )
+
+        column ERROR_COUNT (
+            type: plainText
+            heading {
+                heading: Errors
+            }
+            layout {
+                sequence: 80
+            }
+        )
+
+        column WARNING_COUNT (
+            type: plainText
+            heading {
+                heading: Warnings
+            }
+            layout {
+                sequence: 90
+            }
+        )
+
+        column INFO_COUNT (
+            type: plainText
+            heading {
+                heading: Info
+            }
+            layout {
+                sequence: 100
+            }
+        )
+
+        column LAST_VALIDATED_ON (
+            type: plainText
+            heading {
+                heading: Last validated
+            }
+            layout {
+                sequence: 110
+            }
+        )
+    )
+
+    region batch-tabs (
+        name: Batch Tabs
+        type: list
+        source {
+            list: @batch-tabs
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            listTemplate: @/tabs
+            templateOptions: #DEFAULT#
+        }
+        serverSideCondition {
+            type: expression
+            language: plsql
+            plsqlExpression: :APP_PAGE_ID in ('10', '20', '30', '40')
+        }
+    )
+
+)

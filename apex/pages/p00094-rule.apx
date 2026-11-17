@@ -1,0 +1,498 @@
+page 94 (
+    name: Rule
+    alias: RULE
+    title: Rule
+    pageGroup: @administration
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        width: 1000
+        chained: false
+    }
+    security {
+        authorizationScheme: @fv-admin
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    help {
+        helpText: The query must reference the batch through join b on b.batch_id = view.batch_id. Row rules return file_id, line_number, column_name, bad_value, message. Reconciliations return recon_label, currency_code, source_total, target_total.
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: REGION_POSITION_03
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region rule (
+        name: Rule
+        type: form
+        source {
+            location: localDatabase
+            tableName: XXX_FV_RULES
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+        }
+    )
+
+    pageItem P94_RULE_CODE (
+        type: textField
+        label {
+            label: Rule code
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+            maxLength: 40
+        }
+        source {
+            formRegion: @rule
+            column: RULE_CODE
+            dataType: varchar2
+            primaryKey: true
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+        help {
+            helpText: Unique code, for example AP_INV_FUTURE_DATE.
+        }
+    )
+
+    pageItem P94_RULE_TYPE (
+        type: selectList
+        label {
+            label: Type
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC2:Column check;COLUMN,Row SQL;ROW_SQL,Reconciliation;RECON
+            displayNullValue: false
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @rule
+            column: RULE_TYPE
+            dataType: varchar2
+        }
+        help {
+            helpText: COLUMN rules are built in; ROW_SQL and RECON rules run the SQL below.
+        }
+    )
+
+    pageItem P94_OBJECT_CODE (
+        type: selectList
+        label {
+            label: Object
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery: select object_name || ' (' || object_code || ')' d, object_code r from xxx_fv_objects order by load_order
+            displayNullValue: true
+        }
+        source {
+            formRegion: @rule
+            column: OBJECT_CODE
+            dataType: varchar2
+        }
+        help {
+            helpText: The object whose issues this rule reports.
+        }
+    )
+
+    pageItem P94_SEVERITY (
+        type: selectList
+        label {
+            label: Severity
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC2:ERROR;ERROR,WARNING;WARNING,INFO;INFO
+            displayNullValue: false
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @rule
+            column: SEVERITY
+            dataType: varchar2
+        }
+        help {
+            helpText: ERROR blocks the load, WARNING lowers the readiness score, INFO is advisory.
+        }
+    )
+
+    pageItem P94_TITLE (
+        type: textField
+        label {
+            label: Title
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+            maxLength: 200
+        }
+        source {
+            formRegion: @rule
+            column: TITLE
+            dataType: varchar2
+        }
+        help {
+            helpText: Short description shown in results and in the AI context.
+        }
+    )
+
+    pageItem P94_FIX_HINT (
+        type: textarea
+        label {
+            label: Fix hint
+            alignment: left
+        }
+        layout {
+            sequence: 60
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            maxLength: 1000
+        }
+        source {
+            formRegion: @rule
+            column: FIX_HINT
+            dataType: varchar2
+        }
+        help {
+            helpText: Tell the client how to correct the data.
+        }
+    )
+
+    pageItem P94_RUN_ORDER (
+        type: numberField
+        label {
+            label: Run order
+            alignment: left
+        }
+        layout {
+            sequence: 70
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @rule
+            column: RUN_ORDER
+            dataType: number
+        }
+        help {
+            helpText: Rules run in ascending order.
+        }
+    )
+
+    pageItem P94_TOLERANCE (
+        type: numberField
+        label {
+            label: Tolerance
+            alignment: left
+        }
+        layout {
+            sequence: 80
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+        }
+        source {
+            formRegion: @rule
+            column: TOLERANCE
+            dataType: number
+        }
+        help {
+            helpText: Reconciliations within this absolute difference count as MATCHED.
+        }
+    )
+
+    pageItem P94_IS_ENABLED (
+        type: switch
+        label {
+            label: Enabled
+            alignment: left
+        }
+        layout {
+            sequence: 90
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        source {
+            formRegion: @rule
+            column: IS_ENABLED
+            dataType: varchar2
+        }
+        help {
+            helpText: Disabled rules are skipped during validation.
+        }
+    )
+
+    pageItem P94_RULE_SQL (
+        type: textarea
+        label {
+            label: Rule SQL
+            alignment: left
+        }
+        layout {
+            sequence: 100
+            region: @rule
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional
+            templateOptions: #DEFAULT#
+            cssClasses: u-monospace
+        }
+        source {
+            formRegion: @rule
+            column: RULE_SQL
+            dataType: clob
+        }
+        help {
+            helpText: Reference the batch through join b on b.batch_id = view.batch_id. Row rules return file_id, line_number, column_name, bad_value, message. Reconciliations return recon_label, currency_code, source_total, target_total.
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: CLOSE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button test-rule (
+        buttonName: TEST_RULE
+        label: Test rule
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-flask
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P94_RULE_CODE
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: Save
+        layout {
+            sequence: 30
+            region: @buttons
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: Cancel Dialog
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+            }
+        )
+    )
+
+    process initialize-form (
+        name: Initialize form Rule
+        type: formInitialization
+        formRegion: @rule
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+    )
+
+    process save-rule (
+        name: Save rule
+        type: formAutoRowProcessing
+        formRegion: @rule
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Rule saved.
+        }
+        serverSideCondition {
+            whenButtonPressed: @save
+        }
+    )
+
+    process test-rule (
+        name: Test rule
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_rules_pkg.check_rule_sql(:P94_RULE_CODE);
+                ```
+        }
+        execution {
+            sequence: 20
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Rule SQL is valid.
+        }
+        serverSideCondition {
+            whenButtonPressed: @test-rule
+        }
+    )
+
+    process close-dialog (
+        name: Close Dialog
+        type: closeDialog
+        execution {
+            sequence: 50
+            point: afterSubmit
+        }
+        serverSideCondition {
+            whenButtonPressed: @save
+        }
+    )
+
+)

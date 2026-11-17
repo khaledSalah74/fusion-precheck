@@ -1,0 +1,17 @@
+appItem FV_BATCH_ID (
+    security {
+        sessionStateProtection: restricted
+    }
+    comments {
+        comments: Current batch for the shared batch header and tabs on pages 10, 20, 30 and 40. Set only by a Before Header computation from the page's checksummed Pnn_BATCH_ID item.
+    }
+)
+
+appItem FV_BATCH_CONTEXT (
+    security {
+        sessionStateProtection: restricted
+    }
+    comments {
+        comments: Aggregated, masked batch facts (xxx_fv_ai_pkg.get_batch_context) for the Ask Claude agent system prompt. Set on page 40 before header; never rendered to the browser.
+    }
+)

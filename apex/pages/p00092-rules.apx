@@ -1,0 +1,266 @@
+page 92 (
+    name: Rules
+    alias: RULES
+    title: Rules
+    pageGroup: @administration
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-admin
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Rules
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region rules (
+        name: Rules
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select rule_code,
+                       rule_type,
+                       object_code,
+                       severity,
+                       title,
+                       run_order,
+                       tolerance,
+                       is_enabled
+                  from xxx_fv_rules
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        link {
+            linkColumn: customTarget
+            target: {
+                page: 94
+                items: {
+                    P94_RULE_CODE: \#RULE_CODE#\
+                }
+                clearCache: 94
+            }
+            linkIcon: <span role="img" aria-label="Edit" class="fa fa-edit" title="Edit"></span>
+        }
+
+        column RULE_CODE (
+            type: plainText
+            heading {
+                heading: Rule
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RULE_TYPE (
+            type: plainText
+            heading {
+                heading: Type
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column OBJECT_CODE (
+            type: plainText
+            heading {
+                heading: Object
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column SEVERITY (
+            type: plainText
+            heading {
+                heading: Severity
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column TITLE (
+            type: plainText
+            heading {
+                heading: Title
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RUN_ORDER (
+            type: plainText
+            heading {
+                heading: Run order
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column TOLERANCE (
+            type: plainText
+            heading {
+                heading: Tolerance
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column IS_ENABLED (
+            type: plainText
+            heading {
+                heading: Enabled
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        savedReport primary (
+            visibility: primaryDefault
+            view {
+                rowsPerPage: 50
+            }
+
+            displayColumn RULE_CODE (
+                sequence: 10
+            )
+
+            displayColumn RULE_TYPE (
+                sequence: 20
+            )
+
+            displayColumn OBJECT_CODE (
+                sequence: 30
+            )
+
+            displayColumn SEVERITY (
+                sequence: 40
+            )
+
+            displayColumn TITLE (
+                sequence: 50
+            )
+
+            displayColumn RUN_ORDER (
+                sequence: 60
+            )
+
+            displayColumn TOLERANCE (
+                sequence: 70
+            )
+
+            displayColumn IS_ENABLED (
+                sequence: 80
+            )
+        )
+    )
+
+    button create (
+        buttonName: CREATE
+        label: Create rule
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 94
+                clearCache: 94
+            }
+        }
+    )
+
+    dynamicAction refresh-rules (
+        name: Refresh rules after dialog
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @rules
+        }
+        action refresh (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @rules
+            }
+            execution {
+                sequence: 10
+            }
+        )
+    )
+
+)

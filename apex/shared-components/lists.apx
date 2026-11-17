@@ -77,5 +77,177 @@ list navigation-menu (
         }
     )
 
+    entry admin (
+        label: Admin
+        icon {
+            imageIconCssClasses: fa-gear
+        }
+        layout {
+            sequence: 90
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+        security {
+            authorizationScheme: @fv-admin
+        }
+    )
+
+    entry objects (
+        label: Objects
+        icon {
+            imageIconCssClasses: fa-cubes
+        }
+        layout {
+            sequence: 100
+            parentEntry: @admin
+        }
+        link {
+            target: {
+                page: 90
+            }
+        }
+        security {
+            authorizationScheme: @fv-admin
+        }
+    )
+
+    entry columns (
+        label: Columns
+        icon {
+            imageIconCssClasses: fa-columns
+        }
+        layout {
+            sequence: 110
+            parentEntry: @admin
+        }
+        link {
+            target: {
+                page: 91
+            }
+        }
+        security {
+            authorizationScheme: @fv-admin
+        }
+    )
+
+    entry rules (
+        label: Rules
+        icon {
+            imageIconCssClasses: fa-gavel
+        }
+        layout {
+            sequence: 120
+            parentEntry: @admin
+        }
+        link {
+            target: {
+                page: 92
+            }
+        }
+        security {
+            authorizationScheme: @fv-admin
+        }
+    )
+
+    entry error-log (
+        label: Error Log
+        icon {
+            imageIconCssClasses: fa-bug
+        }
+        layout {
+            sequence: 130
+            parentEntry: @admin
+        }
+        link {
+            target: {
+                page: 93
+            }
+        }
+        security {
+            authorizationScheme: @fv-admin
+        }
+    )
+
 )
 
+
+list batch-tabs (
+    name: Batch Tabs
+
+    entry files-mapping (
+        label: Files & Mapping
+        icon {
+            imageIconCssClasses: fa-file-excel-o
+        }
+        layout {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 10
+                items: {
+                    P10_BATCH_ID: &FV_BATCH_ID.
+                }
+            }
+        }
+    )
+
+    entry results (
+        label: Results
+        icon {
+            imageIconCssClasses: fa-check-square-o
+        }
+        layout {
+            sequence: 20
+        }
+        link {
+            target: {
+                page: 20
+                items: {
+                    P20_BATCH_ID: &FV_BATCH_ID.
+                }
+            }
+        }
+    )
+
+    entry ai-report (
+        label: AI Report
+        icon {
+            imageIconCssClasses: fa-file-text-o
+        }
+        layout {
+            sequence: 30
+        }
+        link {
+            target: {
+                page: 30
+                items: {
+                    P30_BATCH_ID: &FV_BATCH_ID.
+                }
+            }
+        }
+    )
+
+    entry ask-claude (
+        label: Ask Claude
+        icon {
+            imageIconCssClasses: fa-comments-o
+        }
+        layout {
+            sequence: 40
+        }
+        link {
+            target: {
+                page: 40
+                items: {
+                    P40_BATCH_ID: &FV_BATCH_ID.
+                }
+            }
+        }
+    )
+
+)

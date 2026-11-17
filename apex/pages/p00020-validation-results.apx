@@ -1,0 +1,642 @@
+page 20 (
+    name: Validation Results
+    alias: VALIDATION-RESULTS
+    title: Validation Results
+    pageGroup: @batch
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-user
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Validation Results
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region summary (
+        name: Issues by object and severity
+        type: chart
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        chart {
+            type: bar
+        }
+        chartAppearance {
+            orientation: horizontal
+            stack: true
+        }
+
+        series issues (
+            name: Issues
+            execution {
+                sequence: 10
+            }
+            source {
+                location: localDatabase
+                type: sqlQuery
+                sqlQuery:
+                    ```sql
+                    select nvl(i.object_code, 'BATCH') object_code,
+                           i.severity,
+                           count(*) issues
+                      from xxx_fv_issues i
+                     where i.batch_id = :P20_BATCH_ID
+                     group by nvl(i.object_code, 'BATCH'), i.severity
+                     order by 1
+                    ```
+                pageItemsToSubmit: P20_BATCH_ID
+            }
+            columnMapping {
+                seriesName: SEVERITY
+                label: OBJECT_CODE
+                value: ISSUES
+            }
+        )
+
+        axis x (
+            name: x
+            title: Object
+        )
+
+        axis y (
+            name: y
+            title: Issues
+        )
+    )
+
+    region reconciliations (
+        name: Reconciliations
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select ru.title,
+                       rr.recon_label,
+                       rr.currency_code,
+                       rr.source_total,
+                       rr.target_total,
+                       rr.difference,
+                       rr.status_code,
+                       case rr.status_code when 'MATCHED' then 'u-success' else 'u-danger' end status_css
+                  from xxx_fv_recon_results rr
+                  join xxx_fv_rules ru
+                    on ru.rule_code = rr.rule_code
+                 where rr.batch_id = :P20_BATCH_ID
+                 order by ru.run_order, rr.recon_label, rr.currency_code
+                ```
+            pageItemsToSubmit: P20_BATCH_ID
+        }
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: No reconciliations yet. Validate the batch first.
+        }
+
+        column TITLE (
+            type: plainText
+            heading {
+                heading: Reconciliation
+            }
+            layout {
+                sequence: 10
+            }
+        )
+
+        column RECON_LABEL (
+            type: plainText
+            heading {
+                heading: Detail
+            }
+            layout {
+                sequence: 20
+            }
+        )
+
+        column CURRENCY_CODE (
+            type: plainText
+            heading {
+                heading: Currency
+            }
+            layout {
+                sequence: 30
+            }
+        )
+
+        column SOURCE_TOTAL (
+            type: plainText
+            heading {
+                heading: Source total
+                alignment: end
+            }
+            layout {
+                sequence: 40
+                columnAlignment: end
+            }
+            appearance {
+                formatMask: 999G999G999G990D00
+            }
+        )
+
+        column TARGET_TOTAL (
+            type: plainText
+            heading {
+                heading: GL total
+                alignment: end
+            }
+            layout {
+                sequence: 50
+                columnAlignment: end
+            }
+            appearance {
+                formatMask: 999G999G999G990D00
+            }
+        )
+
+        column DIFFERENCE (
+            type: plainText
+            heading {
+                heading: Difference
+                alignment: end
+            }
+            layout {
+                sequence: 60
+                columnAlignment: end
+            }
+            appearance {
+                formatMask: 999G999G999G990D00
+            }
+        )
+
+        column STATUS_CODE (
+            type: plainText
+            heading {
+                heading: Result
+            }
+            layout {
+                sequence: 70
+            }
+            columnFormatting {
+                htmlExpression: <span class="t-Badge #STATUS_CSS#">#STATUS_CODE#</span>
+            }
+        )
+
+        column STATUS_CSS (
+            type: hidden
+            layout {
+                sequence: 80
+            }
+        )
+    )
+
+    region issues (
+        name: Issues
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select i.issue_id,
+                       i.severity,
+                       o.module_code,
+                       i.object_code,
+                       i.rule_code,
+                       r.title rule_title,
+                       i.line_number,
+                       i.column_name,
+                       i.bad_value,
+                       i.message,
+                       r.fix_hint,
+                       d.file_name,
+                       f.sheet_display_name,
+                       i.file_id
+                  from xxx_fv_issues i
+                  join xxx_fv_rules r
+                    on r.rule_code = i.rule_code
+                  left join xxx_fv_objects o
+                    on o.object_code = i.object_code
+                  left join xxx_fv_files f
+                    on f.file_id = i.file_id
+                  left join xxx_fv_documents d
+                    on d.document_id = f.document_id
+                 where i.batch_id = :P20_BATCH_ID
+                ```
+            pageItemsToSubmit: P20_BATCH_ID
+        }
+        layout {
+            sequence: 50
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        messages {
+            whenNoDataFound: No issues found.
+        }
+
+        column ISSUE_ID (
+            type: hidden
+            heading {
+                heading: Issue Id
+            }
+            layout {
+                sequence: 10
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column SEVERITY (
+            type: plainText
+            heading {
+                heading: Severity
+            }
+            layout {
+                sequence: 20
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column MODULE_CODE (
+            type: plainText
+            heading {
+                heading: Module
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column OBJECT_CODE (
+            type: plainText
+            heading {
+                heading: Object
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RULE_CODE (
+            type: plainText
+            heading {
+                heading: Rule
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column RULE_TITLE (
+            type: plainText
+            heading {
+                heading: Rule title
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column LINE_NUMBER (
+            type: link
+            heading {
+                heading: Line
+            }
+            layout {
+                sequence: 70
+            }
+            link {
+                target: {
+                    page: 21
+                    items: {
+                        P21_FILE_ID: #FILE_ID#
+                        P21_LINE_NUMBER: #LINE_NUMBER#
+                    }
+                    clearCache: 21
+                }
+                linkText: #LINE_NUMBER#
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column COLUMN_NAME (
+            type: plainText
+            heading {
+                heading: Column
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column BAD_VALUE (
+            type: plainText
+            heading {
+                heading: Value
+            }
+            layout {
+                sequence: 90
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column MESSAGE (
+            type: plainText
+            heading {
+                heading: Message
+            }
+            layout {
+                sequence: 100
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column FIX_HINT (
+            type: plainText
+            heading {
+                heading: How to fix
+            }
+            layout {
+                sequence: 110
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column FILE_NAME (
+            type: plainText
+            heading {
+                heading: File
+            }
+            layout {
+                sequence: 120
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column SHEET_DISPLAY_NAME (
+            type: plainText
+            heading {
+                heading: Sheet
+            }
+            layout {
+                sequence: 130
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column FILE_ID (
+            type: hidden
+            heading {
+                heading: File Id
+            }
+            layout {
+                sequence: 140
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        savedReport primary (
+            visibility: primaryDefault
+            view {
+                rowsPerPage: 50
+            }
+
+            displayColumn SEVERITY (
+                sequence: 20
+            )
+
+            displayColumn MODULE_CODE (
+                sequence: 30
+            )
+
+            displayColumn OBJECT_CODE (
+                sequence: 40
+            )
+
+            displayColumn RULE_CODE (
+                sequence: 50
+            )
+
+            displayColumn RULE_TITLE (
+                sequence: 60
+            )
+
+            displayColumn LINE_NUMBER (
+                sequence: 70
+            )
+
+            displayColumn COLUMN_NAME (
+                sequence: 80
+            )
+
+            displayColumn BAD_VALUE (
+                sequence: 90
+            )
+
+            displayColumn MESSAGE (
+                sequence: 100
+            )
+
+            displayColumn FIX_HINT (
+                sequence: 110
+            )
+
+            displayColumn FILE_NAME (
+                sequence: 120
+            )
+
+            displayColumn SHEET_DISPLAY_NAME (
+                sequence: 130
+            )
+        )
+    )
+
+    pageItem P20_BATCH_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    button revalidate (
+        buttonName: REVALIDATE
+        label: Re-validate
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-refresh
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button ai-report (
+        buttonName: AI_REPORT
+        label: Generate AI report
+        layout {
+            sequence: 20
+            region: @breadcrumb
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-magic
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 30
+                items: {
+                    P30_BATCH_ID: &P20_BATCH_ID.
+                }
+                clearCache: 30
+            }
+        }
+    )
+
+    computation set-current-batch (
+        itemName: FV_BATCH_ID
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        computation {
+            type: item
+            itemName: P20_BATCH_ID
+        }
+    )
+
+    process revalidate (
+        name: Re-validate batch
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_batch_api.validate_batch(:P20_BATCH_ID, :APP_USER);
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Validation finished.
+        }
+        serverSideCondition {
+            whenButtonPressed: @revalidate
+        }
+    )
+
+    branch stay (
+        name: Stay on results
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            target: {
+                page: 20
+                items: {
+                    P20_BATCH_ID: &P20_BATCH_ID.
+                }
+            }
+        }
+    )
+
+)

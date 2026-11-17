@@ -1,0 +1,833 @@
+page 30 (
+    name: AI Report
+    alias: AI-REPORT
+    title: AI Report
+    pageGroup: @batch
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-user
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    css {
+        inline: .fv-pre .a-CardView-body, .fv-pre .a-CardView-secondaryBody { white-space: pre-line; } .u-rtl { direction: rtl; text-align: right; }
+    }
+
+    region breadcrumb (
+        name: AI Report
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region generate (
+        name: Generate with Claude
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region executive-summary (
+        name: Executive summary
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select j.executive_summary,
+                       j.readiness_explanation
+                  from xxx_fv_ai_reports r
+                 cross apply json_table(r.response_json, '$' columns (
+                         executive_summary     varchar2(4000) path '$.executive_summary',
+                         readiness_explanation varchar2(4000) path '$.readiness_explanation')) j
+                 where r.report_id = :P30_REPORT_ID
+                ```
+            pageItemsToSubmit: P30_REPORT_ID
+        }
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+            cssClasses: &P30_DIR_CLASS.
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: Generate a report to see this section.
+        }
+
+        column EXECUTIVE_SUMMARY (
+            type: plainText
+            heading {
+                heading: Summary
+            }
+            layout {
+                sequence: 10
+            }
+        )
+
+        column READINESS_EXPLANATION (
+            type: plainText
+            heading {
+                heading: Readiness
+            }
+            layout {
+                sequence: 20
+            }
+        )
+    )
+
+    region modules (
+        name: Modules
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select m.seq,
+                       m.module,
+                       m.object_code,
+                       m.status,
+                       m.summary,
+                       (select listagg('- ' || f.txt, chr(10)) within group (order by f.rn)
+                          from json_table(m.findings, '$[*]' columns (rn for ordinality, txt varchar2(1000) path '$')) f) key_findings,
+                       (select listagg('> ' || a.txt, chr(10)) within group (order by a.rn)
+                          from json_table(m.actions, '$[*]' columns (rn for ordinality, txt varchar2(1000) path '$')) a) actions,
+                       m.module || ' - ' || m.object_code module_label,
+                       case m.status
+                           when 'BLOCKED' then 'u-danger'
+                           when 'WARNING' then 'u-warning'
+                           when 'OK'      then 'u-success'
+                           else 'u-normal'
+                       end status_css
+                  from xxx_fv_ai_reports r
+                 cross apply json_table(r.response_json, '$.modules[*]' columns (
+                         seq         for ordinality,
+                         module      varchar2(30)   path '$.module',
+                         object_code varchar2(30)   path '$.object_code',
+                         status      varchar2(20)   path '$.status',
+                         summary     varchar2(4000) path '$.summary',
+                         findings    varchar2(4000) format json path '$.key_findings',
+                         actions     varchar2(4000) format json path '$.actions')) m
+                 where r.report_id = :P30_REPORT_ID
+                 order by m.seq
+                ```
+            pageItemsToSubmit: P30_REPORT_ID
+        }
+        layout {
+            sequence: 50
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+            cssClasses: fv-pre &P30_DIR_CLASS.
+        }
+        card {
+            primaryKeyColumn1: SEQ
+            cssClasses: &STATUS_CSS.
+        }
+        title {
+            advancedFormatting: false
+            column: MODULE_LABEL
+        }
+        subtitle {
+            advancedFormatting: false
+            column: SUMMARY
+        }
+        body {
+            advancedFormatting: false
+            column: KEY_FINDINGS
+        }
+        secondaryBody {
+            advancedFormatting: false
+            column: ACTIONS
+        }
+        iconAndBadge {
+            badgeColumn: STATUS
+        }
+        messages {
+            whenNoDataFound: Generate a report to see this section.
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 2
+        }
+    )
+
+    region insights (
+        name: Insights
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select i.seq,
+                       i.title,
+                       i.detail,
+                       i.evidence,
+                       i.impact,
+                       'Impact ' || i.impact impact_label,
+                       case i.impact
+                           when 'HIGH'   then 'u-danger'
+                           when 'MEDIUM' then 'u-warning'
+                           else 'u-info'
+                       end impact_css
+                  from xxx_fv_ai_reports r
+                 cross apply json_table(r.response_json, '$.insights[*]' columns (
+                         seq      for ordinality,
+                         title    varchar2(400)  path '$.title',
+                         detail   varchar2(4000) path '$.detail',
+                         evidence varchar2(4000) path '$.evidence',
+                         impact   varchar2(10)   path '$.impact')) i
+                 where r.report_id = :P30_REPORT_ID
+                 order by decode(i.impact, 'HIGH', 1, 'MEDIUM', 2, 3), i.seq
+                ```
+            pageItemsToSubmit: P30_REPORT_ID
+        }
+        layout {
+            sequence: 60
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+            cssClasses: fv-pre &P30_DIR_CLASS.
+        }
+        card {
+            primaryKeyColumn1: SEQ
+            cssClasses: &IMPACT_CSS.
+        }
+        title {
+            advancedFormatting: false
+            column: TITLE
+        }
+        subtitle {
+            advancedFormatting: false
+            column: EVIDENCE
+        }
+        body {
+            advancedFormatting: false
+            column: DETAIL
+        }
+        secondaryBody {
+            advancedFormatting: false
+            column: IMPACT_LABEL
+        }
+        iconAndBadge {
+            badgeColumn: IMPACT
+        }
+        messages {
+            whenNoDataFound: Generate a report to see this section.
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 2
+        }
+    )
+
+    region reconciliation-comments (
+        name: Reconciliation comments
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select c.reconciliation,
+                       c.comment_text
+                  from xxx_fv_ai_reports r
+                 cross apply json_table(r.response_json, '$.reconciliation_comments[*]' columns (
+                         rn             for ordinality,
+                         reconciliation varchar2(400)  path '$.reconciliation',
+                         comment_text   varchar2(4000) path '$.comment')) c
+                 where r.report_id = :P30_REPORT_ID
+                 order by c.rn
+                ```
+            pageItemsToSubmit: P30_REPORT_ID
+        }
+        layout {
+            sequence: 70
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+            cssClasses: &P30_DIR_CLASS.
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: Generate a report to see this section.
+        }
+
+        column RECONCILIATION (
+            type: plainText
+            heading {
+                heading: Reconciliation
+            }
+            layout {
+                sequence: 10
+            }
+        )
+
+        column COMMENT_TEXT (
+            type: plainText
+            heading {
+                heading: Comment
+            }
+            layout {
+                sequence: 20
+            }
+        )
+    )
+
+    region top-risks (
+        name: Top risks
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select t.risk
+                  from xxx_fv_ai_reports r
+                 cross apply json_table(r.response_json, '$.top_risks[*]' columns (
+                         rn   for ordinality,
+                         risk varchar2(4000) path '$')) t
+                 where r.report_id = :P30_REPORT_ID
+                 order by t.rn
+                ```
+            pageItemsToSubmit: P30_REPORT_ID
+        }
+        layout {
+            sequence: 80
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+            cssClasses: &P30_DIR_CLASS.
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: Generate a report to see this section.
+        }
+
+        column RISK (
+            type: plainText
+            heading {
+                heading: Risk
+            }
+            layout {
+                sequence: 10
+            }
+        )
+    )
+
+    region next-steps (
+        name: Next steps
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select s.step,
+                       s.owner
+                  from xxx_fv_ai_reports r
+                 cross apply json_table(r.response_json, '$.next_steps[*]' columns (
+                         rn    for ordinality,
+                         step  varchar2(4000) path '$.step',
+                         owner varchar2(20)   path '$.owner')) s
+                 where r.report_id = :P30_REPORT_ID
+                 order by s.rn
+                ```
+            pageItemsToSubmit: P30_REPORT_ID
+        }
+        layout {
+            sequence: 90
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+            cssClasses: &P30_DIR_CLASS.
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: Generate a report to see this section.
+        }
+
+        column STEP (
+            type: plainText
+            heading {
+                heading: Step
+            }
+            layout {
+                sequence: 10
+            }
+        )
+
+        column OWNER (
+            type: plainText
+            heading {
+                heading: Owner
+            }
+            layout {
+                sequence: 20
+            }
+            columnFormatting {
+                htmlExpression: <span class="t-Badge">#OWNER#</span>
+            }
+        )
+    )
+
+    region what-claude-received (
+        name: What Claude received
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select json_serialize(context_json returning clob pretty) context_json,
+                       elapsed_ms,
+                       requested_by,
+                       to_char(requested_on, 'YYYY-MM-DD HH24:MI') requested_on
+                  from xxx_fv_ai_reports
+                 where report_id = :P30_REPORT_ID
+                ```
+            pageItemsToSubmit: P30_REPORT_ID
+        }
+        layout {
+            sequence: 100
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+            cssClasses: &P30_DIR_CLASS.
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: Generate a report to see this section.
+        }
+
+        column CONTEXT_JSON (
+            type: plainText
+            heading {
+                heading: Context JSON
+            }
+            layout {
+                sequence: 10
+            }
+            columnFormatting {
+                htmlExpression: <pre>#CONTEXT_JSON#</pre>
+            }
+        )
+
+        column ELAPSED_MS (
+            type: plainText
+            heading {
+                heading: Elapsed ms
+            }
+            layout {
+                sequence: 20
+            }
+        )
+
+        column REQUESTED_BY (
+            type: plainText
+            heading {
+                heading: Requested by
+            }
+            layout {
+                sequence: 30
+            }
+        )
+
+        column REQUESTED_ON (
+            type: plainText
+            heading {
+                heading: Requested on
+            }
+            layout {
+                sequence: 40
+            }
+        )
+    )
+
+    region history (
+        name: History
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select report_id,
+                       language_code,
+                       status_code,
+                       requested_by,
+                       to_char(requested_on, 'YYYY-MM-DD HH24:MI') requested_on,
+                       elapsed_ms,
+                       error_message
+                  from xxx_fv_ai_reports
+                 where batch_id = :P30_BATCH_ID
+                   and report_type = 'BATCH_REPORT'
+                 order by requested_on desc, report_id desc
+                ```
+            pageItemsToSubmit: P30_BATCH_ID
+        }
+        layout {
+            sequence: 110
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+            cssClasses: &P30_DIR_CLASS.
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: No reports yet.
+        }
+
+        column REPORT_ID (
+            type: link
+            heading {
+                heading: Open
+            }
+            layout {
+                sequence: 5
+            }
+            link {
+                target: {
+                    page: 30
+                    items: {
+                        P30_BATCH_ID: &P30_BATCH_ID.
+                        P30_REPORT_ID: #REPORT_ID#
+                    }
+                }
+                linkText: <span class="fa fa-eye" aria-hidden="true"></span><span class="u-VisuallyHidden">Open report</span>
+            }
+        )
+
+        column LANGUAGE_CODE (
+            type: plainText
+            heading {
+                heading: Language
+            }
+            layout {
+                sequence: 10
+            }
+        )
+
+        column STATUS_CODE (
+            type: plainText
+            heading {
+                heading: Status
+            }
+            layout {
+                sequence: 20
+            }
+        )
+
+        column REQUESTED_BY (
+            type: plainText
+            heading {
+                heading: Requested by
+            }
+            layout {
+                sequence: 30
+            }
+        )
+
+        column REQUESTED_ON (
+            type: plainText
+            heading {
+                heading: Requested on
+            }
+            layout {
+                sequence: 40
+            }
+        )
+
+        column ELAPSED_MS (
+            type: plainText
+            heading {
+                heading: Elapsed ms
+            }
+            layout {
+                sequence: 50
+            }
+        )
+
+        column ERROR_MESSAGE (
+            type: plainText
+            heading {
+                heading: Error
+            }
+            layout {
+                sequence: 60
+            }
+        )
+    )
+
+    pageItem P30_BATCH_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @generate
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P30_REPORT_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @generate
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P30_DIR_CLASS (
+        type: hidden
+        layout {
+            sequence: 30
+            region: @generate
+            slot: regionBody
+        }
+    )
+
+    pageItem P30_LANGUAGE (
+        type: radioGroup
+        label {
+            label: Report language
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @generate
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: staticValues
+            staticValues: STATIC2:English;EN,العربية;AR
+            displayNullValue: false
+        }
+        default {
+            type: static
+            staticValue: EN
+        }
+        help {
+            helpText: Claude writes the report in this language. Object codes, rule codes and column names stay in English.
+        }
+    )
+
+    button generate (
+        buttonName: GENERATE
+        label: Generate with Claude
+        layout {
+            sequence: 10
+            region: @generate
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-magic
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+        serverSideCondition {
+            type: rowsReturned
+            sqlQuery: select 1 from xxx_fv_batches where batch_id = :P30_BATCH_ID and status_code in ('VALIDATED', 'REPORTED')
+        }
+    )
+
+    computation set-current-batch (
+        itemName: FV_BATCH_ID
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        computation {
+            type: item
+            itemName: P30_BATCH_ID
+        }
+    )
+
+    computation latest-report (
+        itemName: P30_REPORT_ID
+        execution {
+            sequence: 20
+            point: beforeHeader
+        }
+        computation {
+            type: sqlQuerySingleValue
+            sqlQuery:
+                ```sql
+                select report_id
+                  from xxx_fv_ai_reports
+                 where batch_id = :P30_BATCH_ID
+                   and report_type = 'BATCH_REPORT'
+                   and status_code = 'COMPLETED'
+                 order by requested_on desc, report_id desc
+                 fetch first 1 row only
+                ```
+        }
+        serverSideCondition {
+            type: itemIsNull
+            item: P30_REPORT_ID
+        }
+    )
+
+    computation dir-class (
+        itemName: P30_DIR_CLASS
+        execution {
+            sequence: 30
+            point: beforeHeader
+        }
+        computation {
+            type: sqlQuerySingleValue
+            sqlQuery:
+                ```sql
+                select case language_code when 'AR' then 'u-rtl' end
+                  from xxx_fv_ai_reports
+                 where report_id = :P30_REPORT_ID
+                ```
+        }
+    )
+
+    process generate-report (
+        name: Generate with Claude
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    l_status varchar2(1);
+                    l_msg    varchar2(4000);
+                begin
+                    xxx_fv_batch_api.generate_ai_report(:P30_BATCH_ID, :P30_LANGUAGE, :APP_USER, :P30_REPORT_ID, l_status, l_msg);
+                    if l_status = 'E' then
+                        apex_error.add_error(p_message          => 'Claude report failed: ' || l_msg,
+                                             p_display_location => apex_error.c_inline_in_notification);
+                    end if;
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Claude finished the readiness report.
+        }
+        serverSideCondition {
+            whenButtonPressed: @generate
+        }
+    )
+
+    branch stay (
+        name: Show report
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            target: {
+                page: 30
+                items: {
+                    P30_BATCH_ID: &P30_BATCH_ID.
+                    P30_REPORT_ID: &P30_REPORT_ID.
+                }
+            }
+        }
+    )
+
+)

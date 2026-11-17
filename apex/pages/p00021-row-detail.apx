@@ -1,0 +1,204 @@
+page 21 (
+    name: Row Detail
+    alias: ROW-DETAIL
+    title: Row Detail
+    pageGroup: @batch
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        width: 900
+        chained: false
+    }
+    security {
+        authorizationScheme: @fv-user
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region row-values (
+        name: Row values
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select c.column_seq,
+                       v.column_name,
+                       case when c.is_sensitive = 'Y'
+                            then lpad(substr(v.cell_value, -4), length(v.cell_value), '*')
+                            else v.cell_value
+                       end cell_value
+                  from xxx_fv_stage_values v
+                  join xxx_fv_files f
+                    on f.file_id = v.file_id
+                  join xxx_fv_columns c
+                    on c.object_code = f.object_code
+                   and c.column_name = v.column_name
+                 where v.file_id = :P21_FILE_ID
+                   and v.line_number = :P21_LINE_NUMBER
+                 order by c.column_seq
+                ```
+            pageItemsToSubmit: P21_FILE_ID,P21_LINE_NUMBER
+        }
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+
+        column COLUMN_SEQ (
+            type: hidden
+            layout {
+                sequence: 10
+            }
+        )
+
+        column COLUMN_NAME (
+            type: plainText
+            heading {
+                heading: Column
+            }
+            layout {
+                sequence: 20
+            }
+        )
+
+        column CELL_VALUE (
+            type: plainText
+            heading {
+                heading: Value
+            }
+            layout {
+                sequence: 30
+            }
+        )
+    )
+
+    region line-issues (
+        name: Issues on this line
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select i.severity,
+                       i.rule_code,
+                       i.column_name,
+                       i.message,
+                       r.fix_hint
+                  from xxx_fv_issues i
+                  join xxx_fv_rules r
+                    on r.rule_code = i.rule_code
+                 where i.file_id = :P21_FILE_ID
+                   and i.line_number = :P21_LINE_NUMBER
+                 order by decode(i.severity, 'ERROR', 1, 'WARNING', 2, 3), i.rule_code
+                ```
+            pageItemsToSubmit: P21_FILE_ID,P21_LINE_NUMBER
+        }
+        layout {
+            sequence: 20
+            slot: contentBody
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+
+        column SEVERITY (
+            type: plainText
+            heading {
+                heading: Severity
+            }
+            layout {
+                sequence: 10
+            }
+        )
+
+        column RULE_CODE (
+            type: plainText
+            heading {
+                heading: Rule
+            }
+            layout {
+                sequence: 20
+            }
+        )
+
+        column COLUMN_NAME (
+            type: plainText
+            heading {
+                heading: Column
+            }
+            layout {
+                sequence: 30
+            }
+        )
+
+        column MESSAGE (
+            type: plainText
+            heading {
+                heading: Message
+            }
+            layout {
+                sequence: 40
+            }
+        )
+
+        column FIX_HINT (
+            type: plainText
+            heading {
+                heading: How to fix
+            }
+            layout {
+                sequence: 50
+            }
+        )
+    )
+
+    pageItem P21_FILE_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @row-values
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P21_LINE_NUMBER (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @row-values
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+)

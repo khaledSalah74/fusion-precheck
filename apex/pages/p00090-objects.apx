@@ -1,0 +1,317 @@
+page 90 (
+    name: Objects
+    alias: OBJECTS
+    title: Objects
+    pageGroup: @administration
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-admin
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Objects
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region objects (
+        name: Objects
+        type: interactiveGrid
+        source {
+            location: localDatabase
+            tableName: XXX_FV_OBJECTS
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        edit {
+            enabled: true
+            allowedOperations: [
+                add
+                update
+                delete
+            ]
+        }
+        pagination {
+            type: page
+        }
+
+        column APEX$ROW_ACTION (
+            type: actionsMenu
+            layout {
+                sequence: 1
+            }
+        )
+
+        column APEX$ROW_SELECTOR (
+            type: rowSelector
+            layout {
+                sequence: 2
+            }
+        )
+
+        column OBJECT_CODE (
+            type: textField
+            heading {
+                heading: Code
+            }
+            layout {
+                sequence: 10
+            }
+            validation {
+                valueRequired: true
+                maxLength: 30
+            }
+            source {
+                databaseColumn: OBJECT_CODE
+                dataType: varchar2
+                primaryKey: true
+            }
+        )
+
+        column MODULE_CODE (
+            type: textField
+            heading {
+                heading: Module
+            }
+            layout {
+                sequence: 20
+            }
+            validation {
+                valueRequired: true
+                maxLength: 10
+            }
+            source {
+                databaseColumn: MODULE_CODE
+                dataType: varchar2
+            }
+        )
+
+        column OBJECT_NAME (
+            type: textField
+            heading {
+                heading: Name
+            }
+            layout {
+                sequence: 30
+            }
+            validation {
+                valueRequired: true
+                maxLength: 100
+            }
+            source {
+                databaseColumn: OBJECT_NAME
+                dataType: varchar2
+            }
+        )
+
+        column SHEET_ALIAS (
+            type: textField
+            heading {
+                heading: Sheet alias
+            }
+            layout {
+                sequence: 40
+            }
+            validation {
+                maxLength: 60
+            }
+            source {
+                databaseColumn: SHEET_ALIAS
+                dataType: varchar2
+            }
+        )
+
+        column FUSION_TARGET (
+            type: textField
+            heading {
+                heading: Fusion target
+            }
+            layout {
+                sequence: 50
+            }
+            validation {
+                maxLength: 200
+            }
+            source {
+                databaseColumn: FUSION_TARGET
+                dataType: varchar2
+            }
+        )
+
+        column LOAD_ORDER (
+            type: numberField
+            heading {
+                heading: Load order
+            }
+            layout {
+                sequence: 60
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: LOAD_ORDER
+                dataType: number
+            }
+        )
+
+        column DESCRIPTION (
+            type: textField
+            heading {
+                heading: Description
+            }
+            layout {
+                sequence: 70
+            }
+            validation {
+                maxLength: 1000
+            }
+            source {
+                databaseColumn: DESCRIPTION
+                dataType: varchar2
+            }
+        )
+
+        column IS_ENABLED (
+            type: selectList
+            heading {
+                heading: Enabled
+            }
+            layout {
+                sequence: 80
+            }
+            lov {
+                type: sqlQuery
+                sqlQuery: select 'Yes' d, 'Y' r from dual union all select 'No', 'N' from dual
+                displayNullValue: true
+            }
+            validation {
+                valueRequired: true
+            }
+            source {
+                databaseColumn: IS_ENABLED
+                dataType: varchar2
+            }
+        )
+
+        savedReport primary (
+            visibility: primary
+            view {
+                default: grid
+                rowsPerPage: 50
+            }
+
+            displayColumn (
+                column: @OBJECT_CODE
+                layout {
+                    sequence: 1
+                }
+            )
+
+            displayColumn (
+                column: @MODULE_CODE
+                layout {
+                    sequence: 2
+                }
+            )
+
+            displayColumn (
+                column: @OBJECT_NAME
+                layout {
+                    sequence: 3
+                }
+            )
+
+            displayColumn (
+                column: @SHEET_ALIAS
+                layout {
+                    sequence: 4
+                }
+            )
+
+            displayColumn (
+                column: @FUSION_TARGET
+                layout {
+                    sequence: 5
+                }
+            )
+
+            displayColumn (
+                column: @LOAD_ORDER
+                layout {
+                    sequence: 6
+                }
+            )
+
+            displayColumn (
+                column: @DESCRIPTION
+                layout {
+                    sequence: 7
+                }
+            )
+
+            displayColumn (
+                column: @IS_ENABLED
+                layout {
+                    sequence: 8
+                }
+            )
+        )
+    )
+
+    process save-objects (
+        name: Save objects
+        type: interactiveGridAutoRowProcessing
+        editableRegion: @objects
+        execution {
+            sequence: 10
+        }
+    )
+
+    button save (
+        buttonName: SAVE
+        label: Save
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+)

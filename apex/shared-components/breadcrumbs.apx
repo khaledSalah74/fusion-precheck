@@ -14,4 +14,132 @@ breadcrumb breadcrumb (
         }
     )
 
+    entry files (
+        name: Files & Mapping
+        pageNumber: 10
+        appearance {
+            parentEntry: @batches
+        }
+        execution {
+            sequence: 20
+        }
+        link {
+            target: {
+                page: 10
+                items: {
+                    P10_BATCH_ID: &FV_BATCH_ID.
+                }
+            }
+        }
+    )
+
+    entry results (
+        name: Validation Results
+        pageNumber: 20
+        appearance {
+            parentEntry: @batches
+        }
+        execution {
+            sequence: 30
+        }
+        link {
+            target: {
+                page: 20
+                items: {
+                    P20_BATCH_ID: &FV_BATCH_ID.
+                }
+            }
+        }
+    )
+
+    entry ai-report (
+        name: AI Report
+        pageNumber: 30
+        appearance {
+            parentEntry: @batches
+        }
+        execution {
+            sequence: 40
+        }
+        link {
+            target: {
+                page: 30
+                items: {
+                    P30_BATCH_ID: &FV_BATCH_ID.
+                }
+            }
+        }
+    )
+
+    entry ask-claude (
+        name: Ask Claude
+        pageNumber: 40
+        appearance {
+            parentEntry: @batches
+        }
+        execution {
+            sequence: 50
+        }
+        link {
+            target: {
+                page: 40
+                items: {
+                    P40_BATCH_ID: &FV_BATCH_ID.
+                }
+            }
+        }
+    )
+
+    entry objects (
+        name: Objects
+        pageNumber: 90
+        execution {
+            sequence: 60
+        }
+        link {
+            target: {
+                page: 90
+            }
+        }
+    )
+
+    entry columns (
+        name: Columns
+        pageNumber: 91
+        execution {
+            sequence: 70
+        }
+        link {
+            target: {
+                page: 91
+            }
+        }
+    )
+
+    entry rules (
+        name: Rules
+        pageNumber: 92
+        execution {
+            sequence: 80
+        }
+        link {
+            target: {
+                page: 92
+            }
+        }
+    )
+
+    entry error-log (
+        name: Error Log
+        pageNumber: 93
+        execution {
+            sequence: 90
+        }
+        link {
+            target: {
+                page: 93
+            }
+        }
+    )
+
 )

@@ -1,0 +1,549 @@
+page 10 (
+    name: Files & Mapping
+    alias: FILES-MAPPING
+    title: Files & Mapping
+    pageGroup: @batch
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-user
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Files & Mapping
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region upload (
+        name: Upload files
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region files (
+        name: Files
+        type: interactiveReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select f.file_id,
+                       d.document_id,
+                       d.file_name,
+                       f.sheet_display_name,
+                       f.object_code,
+                       o.object_name,
+                       f.row_count,
+                       (select count(*) from xxx_fv_file_columns c
+                         where c.file_id = f.file_id and c.mapped_column is not null) mapped_cols,
+                       (select count(*) from xxx_fv_file_columns c
+                         where c.file_id = f.file_id and c.mapped_column is null) unmapped_cols,
+                       (select count(*) from xxx_fv_columns k
+                         where k.object_code = f.object_code and k.is_required = 'Y'
+                           and not exists (select 1 from xxx_fv_file_columns c
+                                            where c.file_id = f.file_id and c.mapped_column = k.column_name)) missing_required,
+                       case
+                           when f.object_code is null then 'Unknown sheet'
+                           when exists (select 1 from xxx_fv_columns k
+                                         where k.object_code = f.object_code and k.is_required = 'Y'
+                                           and not exists (select 1 from xxx_fv_file_columns c
+                                                            where c.file_id = f.file_id and c.mapped_column = k.column_name))
+                               then 'Missing required columns'
+                           else 'OK'
+                       end attention
+                  from xxx_fv_files f
+                  join xxx_fv_documents d
+                    on d.document_id = f.document_id
+                  left join xxx_fv_objects o
+                    on o.object_code = f.object_code
+                 where f.batch_id = :P10_BATCH_ID
+                 order by d.file_name, f.file_id
+                ```
+            pageItemsToSubmit: P10_BATCH_ID
+        }
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/interactive-report
+            templateOptions: #DEFAULT#
+        }
+        messages {
+            whenNoDataFound: No files yet. Upload the client's .xlsx or .csv files above.
+        }
+
+        column FILE_ID (
+            type: link
+            heading {
+                heading: Mapping
+            }
+            layout {
+                sequence: 10
+            }
+            link {
+                target: {
+                    page: 11
+                    items: {
+                        P11_FILE_ID: #FILE_ID#
+                    }
+                    clearCache: 11
+                }
+                linkText: <span class="fa fa-columns" aria-hidden="true"></span><span class="u-VisuallyHidden">Open mapping</span>
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column DOCUMENT_ID (
+            type: link
+            heading {
+                heading: Remove
+            }
+            layout {
+                sequence: 20
+            }
+            link {
+                target: {
+                    type: url
+                    url: javascript:apex.page.confirm('Remove this document and all its results?', {request: 'REMOVE_DOCUMENT', set: {'P10_DOCUMENT_ID': '#DOCUMENT_ID#'}});
+                }
+                linkText: <span class="fa fa-trash-o" aria-hidden="true"></span><span class="u-VisuallyHidden">Remove document</span>
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column FILE_NAME (
+            type: plainText
+            heading {
+                heading: File
+            }
+            layout {
+                sequence: 30
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column SHEET_DISPLAY_NAME (
+            type: plainText
+            heading {
+                heading: Sheet
+            }
+            layout {
+                sequence: 40
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column OBJECT_CODE (
+            type: plainText
+            heading {
+                heading: Object
+            }
+            layout {
+                sequence: 50
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column OBJECT_NAME (
+            type: plainText
+            heading {
+                heading: Object name
+            }
+            layout {
+                sequence: 60
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column ROW_COUNT (
+            type: plainText
+            heading {
+                heading: Rows
+            }
+            layout {
+                sequence: 70
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column MAPPED_COLS (
+            type: plainText
+            heading {
+                heading: Mapped
+            }
+            layout {
+                sequence: 80
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column UNMAPPED_COLS (
+            type: plainText
+            heading {
+                heading: Unmapped
+            }
+            layout {
+                sequence: 90
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column MISSING_REQUIRED (
+            type: plainText
+            heading {
+                heading: Missing required
+            }
+            layout {
+                sequence: 100
+            }
+            source {
+                dataType: NUMBER
+            }
+        )
+
+        column ATTENTION (
+            type: plainText
+            heading {
+                heading: Attention
+            }
+            layout {
+                sequence: 110
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        savedReport primary (
+            visibility: primaryDefault
+            view {
+                rowsPerPage: 50
+            }
+
+            displayColumn FILE_ID (
+                sequence: 10
+            )
+
+            displayColumn DOCUMENT_ID (
+                sequence: 20
+            )
+
+            displayColumn FILE_NAME (
+                sequence: 30
+            )
+
+            displayColumn SHEET_DISPLAY_NAME (
+                sequence: 40
+            )
+
+            displayColumn OBJECT_CODE (
+                sequence: 50
+            )
+
+            displayColumn OBJECT_NAME (
+                sequence: 60
+            )
+
+            displayColumn ROW_COUNT (
+                sequence: 70
+            )
+
+            displayColumn MAPPED_COLS (
+                sequence: 80
+            )
+
+            displayColumn UNMAPPED_COLS (
+                sequence: 90
+            )
+
+            displayColumn MISSING_REQUIRED (
+                sequence: 100
+            )
+
+            displayColumn ATTENTION (
+                sequence: 110
+            )
+        )
+    )
+
+    pageItem P10_BATCH_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @upload
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P10_DOCUMENT_ID (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @upload
+            slot: regionBody
+        }
+        settings {
+            valueProtected: false
+        }
+    )
+
+    pageItem P10_FILES (
+        type: fileUpload
+        label {
+            label: Client files
+            alignment: left
+        }
+        display {
+            displayAs: blockDropzone
+            dropzoneDesc: Drop .xlsx or .csv files here. Each Excel sheet becomes one file to map.
+        }
+        storage {
+            type: appTempFiles
+            allowMultipleFiles: true
+            fileTypes: .xlsx,.csv
+        }
+        layout {
+            sequence: 30
+            region: @upload
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional
+            templateOptions: #DEFAULT#
+        }
+        help {
+            helpText: Upload the client's migration files. Sheets are matched to objects by sheet name; unknown sheets can be assigned on the mapping page.
+        }
+    )
+
+    button upload-files (
+        buttonName: UPLOAD
+        label: Upload
+        layout {
+            sequence: 10
+            region: @upload
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-upload
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button validate (
+        buttonName: VALIDATE
+        label: Validate
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-check-circle
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction refresh-files (
+        name: Refresh files after mapping
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @files
+        }
+        action refresh (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @files
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+
+    computation set-current-batch (
+        itemName: FV_BATCH_ID
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+        computation {
+            type: item
+            itemName: P10_BATCH_ID
+        }
+    )
+
+    process upload-files (
+        name: Upload files
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_batch_api.add_uploaded_files(:P10_BATCH_ID, :P10_FILES, :APP_USER);
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Files uploaded and parsed.
+        }
+        serverSideCondition {
+            whenButtonPressed: @upload-files
+        }
+    )
+
+    process remove-document (
+        name: Remove document
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_batch_api.remove_document(:P10_DOCUMENT_ID, :APP_USER);
+                ```
+        }
+        execution {
+            sequence: 20
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Document removed.
+        }
+        serverSideCondition {
+            type: request=Value
+            value: REMOVE_DOCUMENT
+        }
+    )
+
+    process validate-batch (
+        name: Validate batch
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_batch_api.validate_batch(:P10_BATCH_ID, :APP_USER);
+                ```
+        }
+        execution {
+            sequence: 30
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Validation finished.
+        }
+        serverSideCondition {
+            whenButtonPressed: @validate
+        }
+    )
+
+    branch go-to-results (
+        name: Go to results
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            target: {
+                page: 20
+                items: {
+                    P20_BATCH_ID: &P10_BATCH_ID.
+                }
+            }
+        }
+        serverSideCondition {
+            whenButtonPressed: @validate
+        }
+    )
+
+    branch stay (
+        name: Stay on page
+        execution {
+            sequence: 20
+            point: afterProcessing
+        }
+        behavior {
+            target: {
+                page: 10
+                items: {
+                    P10_BATCH_ID: &P10_BATCH_ID.
+                }
+            }
+        }
+    )
+
+)
