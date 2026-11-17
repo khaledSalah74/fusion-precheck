@@ -167,7 +167,10 @@ def num(n):
     return 'null' if n is None else str(n)
 
 
-NUM_EXPR = ("to_number(max(case when v.column_name = '{c}' then v.cell_value end) "
+# Same number test as the rules engine (^-?[0-9]+(\.[0-9]+)?$): to_number on its own
+# silently accepts "12,500.00", so a value flagged as invalid would still be summed.
+NUM_EXPR = ("to_number(max(case when v.column_name = '{c}' "
+            "and regexp_like(v.cell_value, '^-?[0-9]+(\\.[0-9]+)?$') then v.cell_value end) "
             "default null on conversion error, '999999999999999999990D9999999999', "
             "'NLS_NUMERIC_CHARACTERS=''.,''')")
 DATE_EXPR = ("to_date(max(case when v.column_name = '{c}' then v.cell_value end) "
