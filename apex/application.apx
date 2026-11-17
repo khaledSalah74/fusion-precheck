@@ -54,6 +54,9 @@ app FUSION-DATA-READINESS (
     runtime {
         allowFeedback: true
     }
+    css {
+        fileUrls: #APP_FILES#css/guruhits.css
+    }
     staticFiles {
         apexFilesPath: https://static.oracle.com/cdn/apex/26.1.6/
     }

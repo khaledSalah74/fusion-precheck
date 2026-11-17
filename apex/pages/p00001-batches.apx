@@ -35,6 +35,51 @@ page 1 (
         }
     )
 
+    region overview (
+        name: Overview
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select 1 seq, 'Batches' label, count(*) value, 'u-normal' css from xxx_fv_batches
+                union all
+                select 2, 'Ready', count(case when readiness_status = 'READY' then 1 end), 'u-success' from xxx_fv_batches
+                union all
+                select 3, 'Ready with warnings', count(case when readiness_status = 'READY_WITH_WARNINGS' then 1 end), 'u-warning' from xxx_fv_batches
+                union all
+                select 4, 'Not ready', count(case when readiness_status = 'NOT_READY' then 1 end), 'u-danger' from xxx_fv_batches
+                order by 1
+                ```
+        }
+        layout {
+            sequence: 15
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+            cssClasses: fv-kpi
+        }
+        card {
+            primaryKeyColumn1: SEQ
+            cssClasses: &CSS.
+        }
+        title {
+            advancedFormatting: false
+            column: VALUE
+        }
+        subtitle {
+            advancedFormatting: false
+            column: LABEL
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 4
+        }
+    )
+
     region migration-batches (
         name: Migration Batches
         type: cards

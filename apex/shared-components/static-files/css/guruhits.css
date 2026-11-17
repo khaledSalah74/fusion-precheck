@@ -1,0 +1,371 @@
+/* =============================================================================
+   Fusion Data Readiness - Guru Hits theme layer over Universal Theme 26.1
+   Brand: red #E30613, deep red #A3161C, charcoal #1A1A1A, white.
+   Type: Montserrat (headings), Inter (UI text).
+   ============================================================================= */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800&display=swap");
+
+:root {
+    --fv-red: #E30613;
+    --fv-red-deep: #A3161C;
+    --fv-red-soft: #FDECEC;
+    --fv-ink: #1A1A1A;
+    --fv-ink-2: #2A2A2A;
+    --fv-muted: #6B6B6B;
+    --fv-line: #ECECEC;
+    --fv-bg: #F6F6F7;
+    --fv-surface: #FFFFFF;
+    --fv-green: #15803D;
+    --fv-amber: #B45309;
+    --fv-radius: 14px;
+    --fv-radius-sm: 10px;
+    --fv-shadow: 0 1px 2px rgba(17, 17, 17, .04), 0 6px 20px rgba(17, 17, 17, .06);
+    --fv-shadow-hover: 0 2px 4px rgba(17, 17, 17, .06), 0 14px 32px rgba(17, 17, 17, .10);
+    --fv-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
+    --fv-font-head: "Montserrat", "Inter", system-ui, sans-serif;
+
+    /* Universal Theme tokens */
+    --ut-palette-primary: var(--fv-red);
+    --ut-palette-primary-contrast: #FFFFFF;
+    --ut-palette-primary-shade: var(--fv-red-soft);
+    --ut-palette-primary-text: var(--fv-red);
+    --ut-body-background-color: var(--fv-bg);
+    --ut-body-text-color: var(--fv-ink);
+    --ut-component-background-color: var(--fv-surface);
+    --ut-component-border-color: var(--fv-line);
+    --ut-component-border-radius: var(--fv-radius);
+    --ut-header-background-color: var(--fv-surface);
+    --ut-header-text-color: var(--fv-ink);
+    --ut-nav-background-color: var(--fv-ink);
+    --ut-link-text-color: var(--fv-red);
+    --a-button-border-radius: 999px;
+    --a-field-input-border-radius: var(--fv-radius-sm);
+}
+
+/* ---------- Base ---------- */
+html, body, .t-Body, input, select, textarea, button {
+    font-family: var(--fv-font);
+}
+body.t-PageBody {
+    background: var(--fv-bg);
+    color: var(--fv-ink);
+    -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, .t-Region-title, .t-BreadcrumbRegion-titleText, .t-Login-title, .a-CardView-title {
+    font-family: var(--fv-font-head);
+    letter-spacing: -0.01em;
+}
+a { color: var(--fv-red); }
+a:hover { color: var(--fv-red-deep); }
+::selection { background: var(--fv-red); color: #fff; }
+
+/* ---------- Header ---------- */
+.t-Header-branding {
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: saturate(180%) blur(10px);
+    border-bottom: 1px solid var(--fv-line);
+    box-shadow: none;
+}
+.t-Header-logo-link, .t-Header-logo-link:hover {
+    color: var(--fv-ink);
+    font-family: var(--fv-font-head);
+    font-weight: 800;
+    font-size: 1.05rem;
+    text-decoration: none;
+}
+.t-Header-logo-link::before {
+    content: "";
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    margin-inline-end: 10px;
+    vertical-align: -5px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--fv-red), var(--fv-red-deep));
+    box-shadow: 0 4px 10px rgba(227, 6, 19, .35);
+}
+.t-Header .t-Button--header, .t-Header .t-NavigationBar-item .t-Button {
+    color: var(--fv-ink);
+}
+.t-Header .t-Button--header:hover { background: var(--fv-red-soft); color: var(--fv-red); }
+
+/* ---------- Side navigation ---------- */
+.t-Body-nav, .t-Body-nav .t-TreeNav, .t-TreeNav .a-TreeView-node--topLevel {
+    background: var(--fv-ink);
+}
+.t-TreeNav .a-TreeView-content,
+.t-TreeNav .a-TreeView-label,
+.t-TreeNav .fa {
+    color: #D6D6D6;
+}
+.t-TreeNav .a-TreeView-content:hover {
+    background: var(--fv-ink-2);
+}
+.t-TreeNav .a-TreeView-content:hover .a-TreeView-label,
+.t-TreeNav .a-TreeView-content:hover .fa {
+    color: #FFFFFF;
+}
+.t-TreeNav .a-TreeView-content.is-current,
+.t-TreeNav .a-TreeView-content.is-current--top {
+    background: linear-gradient(90deg, rgba(227, 6, 19, .22), rgba(227, 6, 19, 0));
+    box-shadow: inset 3px 0 0 var(--fv-red);
+}
+.t-TreeNav .a-TreeView-content.is-current .a-TreeView-label,
+.t-TreeNav .a-TreeView-content.is-current .fa,
+.t-TreeNav .a-TreeView-content.is-current--top .a-TreeView-label,
+.t-TreeNav .a-TreeView-content.is-current--top .fa {
+    color: #FFFFFF;
+}
+
+/* ---------- Title bar ---------- */
+.t-Body-title {
+    background: transparent;
+    border-bottom: 0;
+    box-shadow: none;
+}
+.t-BreadcrumbRegion {
+    padding-block: 20px 8px;
+}
+.t-BreadcrumbRegion-titleText {
+    font-weight: 800;
+    font-size: 1.75rem;
+    color: var(--fv-ink);
+}
+.t-Breadcrumb-label, .t-Breadcrumb-item a {
+    color: var(--fv-muted);
+    font-size: .8125rem;
+}
+
+/* ---------- Regions ---------- */
+.t-Region, .t-IRR-region, .t-ContentBlock {
+    background: var(--fv-surface);
+    border: 1px solid var(--fv-line);
+    border-radius: var(--fv-radius);
+    box-shadow: var(--fv-shadow);
+    overflow: hidden;
+}
+.t-Region-header {
+    background: transparent;
+    border-bottom: 1px solid var(--fv-line);
+    padding: 14px 20px;
+}
+.t-Region-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--fv-ink);
+}
+.t-Region-body { padding: 18px 20px; }
+
+/* ---------- Buttons ---------- */
+.t-Button {
+    border-radius: 999px;
+    font-weight: 600;
+    padding-inline: 18px;
+    box-shadow: none;
+    transition: background-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.t-Button:not(.t-Button--hot):not(.t-Button--noUI):not(.t-Button--header) {
+    background: var(--fv-surface);
+    border: 1px solid #D9D9D9;
+    color: var(--fv-ink);
+}
+.t-Button:not(.t-Button--hot):not(.t-Button--noUI):not(.t-Button--header):hover {
+    border-color: var(--fv-red);
+    color: var(--fv-red);
+}
+.t-Button--hot, .a-Button--hot {
+    background: var(--fv-red);
+    border-color: var(--fv-red);
+    color: #FFFFFF;
+    box-shadow: 0 6px 16px rgba(227, 6, 19, .28);
+}
+.t-Button--hot:hover, .a-Button--hot:hover {
+    background: var(--fv-red-deep);
+    border-color: var(--fv-red-deep);
+    transform: translateY(-1px);
+}
+.t-Button:focus-visible, .a-Button:focus-visible {
+    outline: 3px solid rgba(227, 6, 19, .35);
+    outline-offset: 2px;
+}
+
+/* ---------- Form fields ---------- */
+.t-Form-fieldContainer--floatingLabel .t-Form-inputContainer,
+.apex-item-text, .apex-item-select, .apex-item-textarea, .apex-item-datepicker {
+    border-radius: var(--fv-radius-sm);
+}
+.t-Form-fieldContainer--floatingLabel.is-active .t-Form-label,
+.apex-item-text:focus, .apex-item-select:focus, .apex-item-textarea:focus {
+    border-color: var(--fv-red);
+}
+.u-monospace, .u-monospace textarea {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: .8125rem;
+    min-height: 260px;
+}
+
+/* ---------- Tabs (batch tabs) ---------- */
+.t-Tabs {
+    border: 0;
+    gap: 6px;
+    padding: 4px;
+    background: var(--fv-surface);
+    border-radius: 999px;
+    box-shadow: var(--fv-shadow);
+    display: inline-flex;
+    margin-block: 6px 16px;
+}
+.t-Tabs-item { border: 0; }
+.t-Tabs-link {
+    border-radius: 999px;
+    padding: 8px 16px;
+    color: var(--fv-muted);
+    font-weight: 600;
+    border: 0;
+}
+.t-Tabs-link:hover { color: var(--fv-red); background: var(--fv-red-soft); }
+.t-Tabs-item.is-active .t-Tabs-link {
+    background: var(--fv-red);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(227, 6, 19, .30);
+}
+.t-Tabs-item.is-active .t-Tabs-link::after { display: none; }
+
+/* ---------- Cards ---------- */
+.a-CardView {
+    border: 1px solid var(--fv-line);
+    border-radius: var(--fv-radius);
+    box-shadow: var(--fv-shadow);
+    transition: box-shadow .2s ease, transform .2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.a-CardView:hover {
+    box-shadow: var(--fv-shadow-hover);
+    transform: translateY(-2px);
+}
+.a-CardView::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: #D4D4D4;
+}
+.a-CardView-item.u-danger .a-CardView::before { background: var(--fv-red); }
+.a-CardView-item.u-warning .a-CardView::before { background: #F59E0B; }
+.a-CardView-item.u-success .a-CardView::before { background: #22C55E; }
+.a-CardView-item.u-info .a-CardView::before { background: #3B82F6; }
+.a-CardView-item.u-danger, .a-CardView-item.u-warning,
+.a-CardView-item.u-success, .a-CardView-item.u-info, .a-CardView-item.u-normal {
+    background: transparent;
+    color: inherit;
+}
+.a-CardView-title { font-weight: 700; font-size: 1.05rem; }
+.a-CardView-subTitle { color: var(--fv-muted); }
+.a-CardView-badge {
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: .75rem;
+    padding: 4px 10px;
+    background: #F1F1F1;
+    color: var(--fv-ink);
+}
+.a-CardView-item.u-danger .a-CardView-badge { background: var(--fv-red-soft); color: var(--fv-red-deep); }
+.a-CardView-item.u-warning .a-CardView-badge { background: #FEF3C7; color: var(--fv-amber); }
+.a-CardView-item.u-success .a-CardView-badge { background: #DCFCE7; color: var(--fv-green); }
+
+/* ---------- Badges in reports ---------- */
+.t-Badge {
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: .75rem;
+    padding: 3px 10px;
+    background: #F1F1F1;
+    color: var(--fv-ink);
+}
+.t-Badge.u-danger { background: var(--fv-red-soft); color: var(--fv-red-deep); }
+.t-Badge.u-warning { background: #FEF3C7; color: var(--fv-amber); }
+.t-Badge.u-success { background: #DCFCE7; color: var(--fv-green); }
+.t-Badge.u-normal { background: #F1F1F1; color: var(--fv-muted); }
+
+/* ---------- Reports and grids ---------- */
+.t-Report-report th, .a-IRR-header, .a-GV-header {
+    background: #FAFAFA;
+    color: var(--fv-muted);
+    font-weight: 600;
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.t-Report-report td, .a-IRR-table td { border-color: var(--fv-line); }
+.t-Report-report tr:hover td, .a-IRR-table tr:hover td { background: #FFF7F7; }
+.a-IRR-toolbar, .a-GV-toolbar, .a-Toolbar { background: transparent; }
+.a-IRR-table .fa-trash-o { color: var(--fv-red); }
+
+/* Batch header on pages 10-40 reads as a KPI strip */
+#batch-header .t-Report-report th { background: transparent; }
+#batch-header .t-Report-report td { font-weight: 600; font-size: .95rem; }
+
+/* ---------- Dialogs ---------- */
+.ui-dialog, .t-Dialog-page .t-Dialog {
+    border-radius: 18px;
+    overflow: hidden;
+}
+.ui-dialog .ui-dialog-titlebar {
+    background: var(--fv-surface);
+    border-bottom: 1px solid var(--fv-line);
+    font-family: var(--fv-font-head);
+    font-weight: 800;
+}
+.t-Dialog-footer, .t-ButtonRegion--dialogRegion { background: #FAFAFA; }
+
+/* ---------- Alerts ---------- */
+.t-Alert--success .t-Alert-icon .t-Icon { color: var(--fv-green); }
+.t-Alert--page { border-radius: var(--fv-radius); box-shadow: var(--fv-shadow-hover); }
+
+/* ---------- Login ---------- */
+.t-PageBody--login {
+    background:
+        radial-gradient(1200px 600px at 85% 10%, rgba(255, 255, 255, .14), transparent 60%),
+        linear-gradient(135deg, var(--fv-red) 0%, var(--fv-red-deep) 100%);
+}
+.t-PageBody--login .t-Login-region {
+    border-radius: 20px;
+    border: 0;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, .25);
+}
+.t-PageBody--login .t-Login-title {
+    font-weight: 800;
+    color: var(--fv-ink);
+}
+
+/* ---------- Footer ---------- */
+.t-Footer { color: var(--fv-muted); background: transparent; }
+
+/* ---------- RTL (Arabic AI report) ---------- */
+.u-rtl { direction: rtl; text-align: right; }
+
+/* ---------- Motion preference ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .a-CardView, .t-Button { transition: none; }
+    .a-CardView:hover, .t-Button--hot:hover { transform: none; }
+}
+
+/* ---------- KPI strip (page 1) ---------- */
+.fv-kpi, .fv-kpi.t-Region { background: transparent; border: 0; box-shadow: none; }
+.fv-kpi .a-CardView:hover { transform: none; }
+.fv-kpi .a-CardView-title {
+    font-family: var(--fv-font-head);
+    font-weight: 800;
+    font-size: 2.25rem;
+    line-height: 1.1;
+}
+.fv-kpi .a-CardView-subTitle {
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: .75rem;
+    font-weight: 600;
+}
+.fv-kpi .a-CardView-item.u-danger .a-CardView-title { color: var(--fv-red); }
+.fv-kpi .a-CardView-item.u-warning .a-CardView-title { color: var(--fv-amber); }
+.fv-kpi .a-CardView-item.u-success .a-CardView-title { color: var(--fv-green); }

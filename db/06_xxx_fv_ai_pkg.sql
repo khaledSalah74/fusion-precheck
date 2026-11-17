@@ -204,7 +204,7 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
                        p_prompt               => p_prompt,
                        p_system_prompt        => p_system_prompt,
                        p_service_static_id    => xxx_fv_const_pkg.c_ai_service_static_id,
-                       p_temperature          => 0.2,
+                       -- no p_temperature: current Claude models reject it (HTTP 400 "temperature is deprecated")
                        p_response_json_schema => p_schema));
     end call_ai;
 
