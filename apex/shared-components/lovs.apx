@@ -1,0 +1,52 @@
+lov target-env (
+    name: TARGET_ENV
+    source {
+        location: staticValues
+    }
+
+    entry dev (
+        sequence: 1
+        display: DEV
+        return: DEV
+    )
+
+    entry test (
+        sequence: 2
+        display: TEST
+        return: TEST
+    )
+
+    entry uat (
+        sequence: 3
+        display: UAT
+        return: UAT
+    )
+
+    entry prod (
+        sequence: 4
+        display: PROD
+        return: PROD
+    )
+
+)
+
+lov boolean (
+    name: BOOLEAN
+    source {
+        location: staticValues
+    }
+
+    entry false (
+        sequence: 2
+        display: No
+        return: FALSE
+    )
+
+    entry true (
+        sequence: 1
+        display: Yes
+        return: TRUE
+    )
+
+)
+

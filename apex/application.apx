@@ -1,0 +1,60 @@
+app FUSION-DATA-READINESS (
+    name: Fusion Data Readiness
+    logo {
+        type: text
+        text: &APP_TITLE.
+    }
+    navigation {
+        homeUrl: {
+            page: 1
+        }
+        loginUrl: {
+            page: LOGIN
+        }
+    }
+    navigationMenu {
+        listTemplate: @/side-navigation-menu
+        templateOptions: [
+            #DEFAULT#
+            js-defaultCollapsed
+            js-navCollapsed--hidden
+            t-TreeNav--styleA
+        ]
+        list: @navigation-menu
+    }
+    navigationBar {
+        list: @navigation-bar
+        listTemplate: @/navigation-bar
+        templateOptions: #DEFAULT#
+    }
+    userInterface {
+        currentTheme: @universal-theme
+        globalPage: 0
+        addBuiltWithApexToFooter: false
+    }
+    appFormatMasks {
+        date: YYYY-MM-DD
+        timestamp: DS
+        timestampTimeZone: DS
+    }
+    authentication {
+        scheme: @oracle-apex-accounts
+    }
+    authorization {
+        scheme: @fv-user
+        sourceForRoleOrGroupSchemes: accessControlUserRoleAssignments
+    }
+    sessionManagement {
+        maxSessionIdleTime: 3600
+        maxSessionLength: 28800
+    }
+    sessionStateProtection {
+        checksumSalt: 12766EFF5C5CC699EB957BEF8A189FC889EC69860FAA4ED78545DE24BB424608
+    }
+    runtime {
+        allowFeedback: true
+    }
+    staticFiles {
+        apexFilesPath: https://static.oracle.com/cdn/apex/26.1.6/
+    }
+)

@@ -1,0 +1,17 @@
+breadcrumb breadcrumb (
+    name: Breadcrumb
+
+    entry batches (
+        name: Batches
+        pageNumber: 1
+        execution {
+            sequence: 10
+        }
+        link {
+            target: {
+                page: 1
+            }
+        }
+    )
+
+)

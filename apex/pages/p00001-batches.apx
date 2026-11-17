@@ -1,0 +1,173 @@
+page 1 (
+    name: Batches
+    alias: BATCHES
+    title: Batches
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    navigation {
+        cursorFocus: doNotFocusCursor
+    }
+    security {
+        authorizationScheme: @fv-user
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+
+    region breadcrumb (
+        name: Batches
+        type: breadcrumb
+        source {
+            breadcrumb: @breadcrumb
+        }
+        layout {
+            sequence: 10
+            slot: breadcrumbBar
+        }
+        appearance {
+            template: @/title-bar
+            templateOptions: #DEFAULT#
+        }
+        componentAppearance {
+            breadcrumbTemplate: @/breadcrumb
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region migration-batches (
+        name: Migration Batches
+        type: cards
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select b.batch_id,
+                       b.batch_name,
+                       b.client_name,
+                       s.status_name,
+                       b.readiness_score,
+                       b.readiness_status,
+                       b.error_count,
+                       b.warning_count,
+                       to_char(b.cutover_date, 'YYYY-MM-DD') cutover_date,
+                       case
+                           when b.readiness_status is null then 'Not validated'
+                           else b.readiness_score || ' · ' || b.readiness_status
+                       end readiness_label,
+                       case b.readiness_status
+                           when 'NOT_READY'           then 'u-danger'
+                           when 'READY_WITH_WARNINGS' then 'u-warning'
+                           when 'READY'               then 'u-success'
+                       end readiness_css
+                  from xxx_fv_batches b
+                  join xxx_fv_batch_statuses s
+                    on s.status_code = b.status_code
+                 order by b.created_on desc
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/cards-container
+            templateOptions: #DEFAULT#
+        }
+        card {
+            primaryKeyColumn1: BATCH_ID
+        }
+        title {
+            advancedFormatting: false
+            column: BATCH_NAME
+        }
+        subtitle {
+            advancedFormatting: false
+            column: CLIENT_NAME
+        }
+        body {
+            advancedFormatting: true
+            htmlExpression: &STATUS_NAME!HTML. · Cutover &CUTOVER_DATE!HTML.<br>Errors &ERROR_COUNT!HTML. · Warnings &WARNING_COUNT!HTML.
+        }
+        iconAndBadge {
+            badgeColumn: READINESS_LABEL
+            badgeCssClasses: &READINESS_CSS.
+        }
+        messages {
+            whenNoDataFound: No batches yet. Click New batch to start.
+            noDataFoundIcon: fa-database
+        }
+        componentAppearance {
+            layout: grid
+            gridColumns: 3
+        }
+
+        action open-batch (
+            type: fullCard
+            layout {
+                sequence: 10
+            }
+            behavior {
+                type: redirectThisApp
+                target: {
+                    page: 10
+                    items: {
+                        P10_BATCH_ID: &BATCH_ID.
+                    }
+                    clearCache: 10
+                }
+            }
+        )
+    )
+
+    button new-batch (
+        buttonName: NEW_BATCH
+        label: New batch
+        layout {
+            sequence: 10
+            region: @breadcrumb
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-plus
+        }
+        behavior {
+            action: redirectThisApp
+            target: {
+                page: 2
+                clearCache: 2
+            }
+        }
+    )
+
+    dynamicAction refresh-batches (
+        name: Refresh batches after dialog
+        execution {
+            sequence: 10
+        }
+        when {
+            event: apexafterclosedialog
+            selectionType: region
+            region: @breadcrumb
+        }
+        action refresh (
+            action: refresh
+            affectedElements {
+                selectionType: region
+                region: @migration-batches
+            }
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+
+)

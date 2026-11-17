@@ -1,0 +1,6 @@
+role admin (
+    name: ADMIN
+    description {
+        description: Configuration administrators - objects, columns, rules and error log pages.
+    }
+)

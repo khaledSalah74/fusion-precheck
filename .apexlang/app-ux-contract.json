@@ -1,0 +1,255 @@
+{
+  "sourceEvidence": {
+    "requirementsDoc": "docs/APP_SPEC.md",
+    "schemaDocs": [
+      "db/01_tables.sql",
+      "db/07_xxx_fv_batch_api.sql"
+    ],
+    "liveDb": "Tamimi-Test",
+    "requirements": [
+      "FR-0.2",
+      "FR-0.3",
+      "FR-0.4",
+      "FR-0.5",
+      "FR-1",
+      "FR-1.1",
+      "FR-2.1",
+      "FR-2.2",
+      "FR-2.10",
+      "FR-2.11",
+      "FR-2.20",
+      "FR-2.21",
+      "FR-2.30",
+      "FR-2.40",
+      "FR-2.90",
+      "FR-2.91",
+      "FR-2.92",
+      "FR-2.93",
+      "FR-3"
+    ],
+    "objects": [
+      {
+        "name": "XXX_FV_BATCHES",
+        "evidence": "schema_doc"
+      },
+      {
+        "name": "XXX_FV_BATCH_STATUSES",
+        "evidence": "schema_doc"
+      }
+    ]
+  },
+  "pageInventory": [
+    {
+      "page": 1,
+      "name": "Batches",
+      "type": "cards",
+      "requirementId": "FR-2.1",
+      "regions": [
+        {
+          "name": "Batches",
+          "family": "breadcrumb",
+          "source": "none/staticContent",
+          "id": "breadcrumb"
+        },
+        {
+          "name": "Migration Batches",
+          "family": "cards",
+          "source": "sql",
+          "id": "migration-batches"
+        }
+      ]
+    },
+    {
+      "page": 2,
+      "name": "New Batch",
+      "type": "modalForm",
+      "requirementId": "FR-2.2",
+      "regions": [
+        {
+          "id": "batch",
+          "name": "Batch",
+          "family": "staticContent",
+          "source": "none/staticContent"
+        },
+        {
+          "id": "buttons",
+          "name": "Buttons",
+          "family": "staticContent",
+          "source": "none/staticContent"
+        }
+      ]
+    }
+  ],
+  "compositionPlan": {
+    "breadcrumbs": [
+      {
+        "page": 1,
+        "entry": "batches",
+        "root": true
+      }
+    ],
+    "navigationMenu": [
+      {
+        "label": "Batches",
+        "page": 1,
+        "icon": "fa-database"
+      }
+    ],
+    "pageGroups": [
+      "Batch",
+      "Administration"
+    ],
+    "layoutRecipes": [
+      {
+        "page": 1,
+        "region": "Migration Batches",
+        "layout": "grid"
+      }
+    ]
+  },
+  "richUiPatternPlan": [
+    {
+      "pattern": "statusColoredCards",
+      "page": 1,
+      "region": "Migration Batches",
+      "component": "cards",
+      "mappings": {
+        "title": "BATCH_NAME",
+        "subtitle": "CLIENT_NAME",
+        "badge": "READINESS_LABEL",
+        "cardCss": "READINESS_CSS"
+      },
+      "evidence": "FR-2.1, FR-1.1, xxx_fv_batches_ck1"
+    }
+  ],
+  "lovPlan": [
+    {
+      "lov": "TARGET_ENV",
+      "type": "static",
+      "values": [
+        "DEV",
+        "TEST",
+        "UAT",
+        "PROD"
+      ],
+      "consumers": [
+        "P2_TARGET_ENV"
+      ],
+      "unit": "U2",
+      "evidence": "FR-2.2"
+    }
+  ],
+  "behaviorPlan": {
+    "modalTargets": [
+      {
+        "sourcePage": 1,
+        "source": "New batch button",
+        "targetPage": 2,
+        "items": {},
+        "presentation": "modalDialog",
+        "closeRefreshRegion": "migration-batches",
+        "requirementId": "FR-2.1",
+        "sourceRegion": "breadcrumb"
+      }
+    ],
+    "links": [
+      {
+        "sourcePage": 1,
+        "source": "Migration Batches fullCard",
+        "targetPage": 10,
+        "items": {
+          "P10_BATCH_ID": "&BATCH_ID."
+        },
+        "keyColumn": "BATCH_ID",
+        "requirementId": "FR-2.1"
+      }
+    ],
+    "pageActions": [
+      {
+        "page": 1,
+        "label": "New batch",
+        "targetPage": 2,
+        "placement": "breadcrumb",
+        "requirementId": "FR-2.1"
+      }
+    ],
+    "parentChildContext": [],
+    "validations": [
+      {
+        "page": 2,
+        "item": "P2_BATCH_NAME",
+        "rule": "required",
+        "requirementId": "FR-2.2"
+      },
+      {
+        "page": 2,
+        "item": "P2_CUTOVER_DATE",
+        "rule": "required",
+        "requirementId": "FR-2.2"
+      }
+    ],
+    "formContext": [
+      {
+        "page": 2,
+        "item": "P2_BATCH_ID",
+        "state": "hidden",
+        "source": "create_batch out param",
+        "requirementId": "FR-2.2"
+      }
+    ],
+    "formDefaults": [],
+    "refreshDependencies": [
+      {
+        "page": 1,
+        "event": "apexafterclosedialog",
+        "triggerRegion": "breadcrumb",
+        "region": "migration-batches",
+        "requirementId": "FR-2.1"
+      }
+    ],
+    "authorization": [
+      {
+        "scheme": "FV_USER",
+        "rule": "mustNotBePublicUser",
+        "pages": [
+          1,
+          2,
+          10,
+          11,
+          20,
+          21,
+          30,
+          40
+        ]
+      },
+      {
+        "scheme": "FV_ADMIN",
+        "rule": "ACL role ADMIN",
+        "pages": [
+          90,
+          91,
+          92,
+          93
+        ]
+      }
+    ]
+  },
+  "testPlan": [
+    {
+      "scenario": "U1 live validation",
+      "method": "apex validate",
+      "expected": "no errors"
+    },
+    {
+      "scenario": "Page 1 empty state",
+      "method": "runtime",
+      "expected": "No batches yet message"
+    },
+    {
+      "scenario": "Readiness badge colors",
+      "method": "runtime",
+      "expected": "red / amber / green by readiness_status"
+    }
+  ],
+  "contractScope": "Mirrors built units only (U1-U2 so far); the full frozen plan lives in .apexlang/application-spec.md and is added here unit by unit."
+}

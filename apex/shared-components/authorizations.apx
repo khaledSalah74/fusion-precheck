@@ -1,0 +1,28 @@
+authorization fv-user (
+    name: FV_USER
+    type: plSqlFunctionBody
+    settings {
+        plsqlFunctionBody: return :APP_USER is not null and :APP_USER <> 'nobody';
+    }
+    error {
+        errorMessage: You must sign in to use this application.
+    }
+    advanced {
+        evaluationType: perSession
+    }
+)
+
+authorization fv-admin (
+    name: FV_ADMIN
+    type: isInRoleOrGroup
+    settings {
+        type: applicationRole
+        names: admin
+    }
+    error {
+        errorMessage: Insufficient privileges. This page needs the ADMIN role.
+    }
+    advanced {
+        evaluationType: perSession
+    }
+)

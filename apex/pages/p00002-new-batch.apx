@@ -1,0 +1,249 @@
+page 2 (
+    name: New Batch
+    alias: NEW-BATCH
+    title: New Batch
+    appearance {
+        pageMode: modalDialog
+        dialogTemplate: @/modal-dialog
+        templateOptions: #DEFAULT#
+    }
+    dialog {
+        chained: false
+    }
+    security {
+        authorizationScheme: @fv-user
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    help {
+        helpText: Create a validation batch for one client cutover. After you create it you can upload the client files.
+    }
+
+    region buttons (
+        name: Buttons
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: REGION_POSITION_03
+        }
+        appearance {
+            template: @/buttons-container
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    region batch (
+        name: Batch
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: contentBody
+        }
+        appearance {
+            template: @/blank-with-attributes
+            templateOptions: #DEFAULT#
+        }
+    )
+
+    pageItem P2_BATCH_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @batch
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P2_BATCH_NAME (
+        type: textField
+        label {
+            label: Batch name
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @batch
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            valueRequired: true
+            maxLength: 200
+        }
+        help {
+            helpText: A short name for this validation run, for example the client and the mock load number.
+        }
+    )
+
+    pageItem P2_CLIENT_NAME (
+        type: textField
+        label {
+            label: Client name
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @batch
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            maxLength: 200
+        }
+        help {
+            helpText: The client or legal entity whose data is being migrated.
+        }
+    )
+
+    pageItem P2_TARGET_ENV (
+        type: selectList
+        label {
+            label: Target environment
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @batch
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        lov {
+            type: sharedComponent
+            lov: @target-env
+            displayNullValue: true
+        }
+        help {
+            helpText: The Fusion environment these files are meant to be loaded into.
+        }
+    )
+
+    pageItem P2_CUTOVER_DATE (
+        type: datePicker
+        label {
+            label: Cutover date
+            alignment: left
+        }
+        layout {
+            sequence: 50
+            region: @batch
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/required-floating
+            templateOptions: #DEFAULT#
+            formatMask: YYYY-MM-DD
+        }
+        validation {
+            valueRequired: true
+        }
+        help {
+            helpText: The date the opening balances are taken. Rules compare invoice and balance dates with this date.
+        }
+    )
+
+    button cancel (
+        buttonName: CANCEL
+        label: Cancel
+        layout {
+            sequence: 10
+            region: @buttons
+            slot: CLOSE
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+    )
+
+    button create (
+        buttonName: CREATE
+        label: Create
+        layout {
+            sequence: 20
+            region: @buttons
+            slot: CREATE
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    dynamicAction cancel-dialog (
+        name: Cancel Dialog
+        execution {
+            sequence: 10
+        }
+        when {
+            event: click
+            selectionType: button
+            button: @cancel
+        }
+
+        action native-dialog-cancel (
+            action: cancelDialog
+            execution {
+                sequence: 10
+                fireOnInit: false
+            }
+        )
+    )
+
+    process create-batch (
+        name: Create batch
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_batch_api.create_batch(:P2_BATCH_NAME, :P2_CLIENT_NAME, :P2_TARGET_ENV,
+                                              to_date(:P2_CUTOVER_DATE, 'YYYY-MM-DD'), :APP_USER, :P2_BATCH_ID);
+                ```
+        }
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Batch created.
+        }
+        serverSideCondition {
+            whenButtonPressed: @create
+        }
+    )
+
+    process close-dialog (
+        name: Close Dialog
+        type: closeDialog
+        execution {
+            sequence: 50
+            point: afterSubmit
+        }
+        serverSideCondition {
+            whenButtonPressed: @create
+        }
+    )
+
+)
