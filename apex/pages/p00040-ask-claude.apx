@@ -36,9 +36,29 @@ page 40 (
         }
     )
 
-    region chat (
-        name: Chat
-        type: staticContent
+    region conversation (
+        name: Conversation
+        type: classicReport
+        source {
+            location: localDatabase
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select r.report_id,
+                       json_value(r.context_json, '$.question' returning varchar2(4000)) question,
+                       case r.status_code
+                           when 'COMPLETED' then json_value(r.response_json, '$.answer' returning varchar2(32000) truncate)
+                           else 'Claude could not answer: ' || r.error_message
+                       end answer,
+                       to_char(r.requested_on, 'YYYY-MM-DD HH24:MI') asked_on
+                  from xxx_fv_ai_reports r
+                 where r.batch_id = :P40_BATCH_ID
+                   and r.report_type = 'CHAT'
+                   and r.requested_by = :APP_USER
+                 order by r.report_id
+                ```
+            pageItemsToSubmit: P40_BATCH_ID
+        }
         layout {
             sequence: 30
             slot: body
@@ -46,9 +66,64 @@ page 40 (
         appearance {
             template: @/standard
             templateOptions: #DEFAULT#
+            cssClasses: fv-chat
         }
-        advanced {
-            htmlDomId: fv-chat
+        componentAppearance {
+            template: @/standard
+            templateOptions: [
+                #DEFAULT#
+                t-Report--stretch
+            ]
+        }
+        messages {
+            whenNoDataFound: Ask anything about this batch, for example "Which supplier issues block the load?" or "لماذا لا يتطابق رصيد الموردين مع الأستاذ العام؟"
+        }
+
+        column REPORT_ID (
+            type: hidden
+            layout {
+                sequence: 10
+            }
+        )
+
+        column QUESTION (
+            type: plainText
+            heading {
+                heading: Conversation
+            }
+            layout {
+                sequence: 20
+            }
+            columnFormatting {
+                htmlExpression: <div class="fv-msg fv-msg--user">#QUESTION#</div><div class="fv-msg fv-msg--ai">#ANSWER#</div><div class="fv-msg-time">#ASKED_ON#</div>
+            }
+        )
+
+        column ANSWER (
+            type: hidden
+            layout {
+                sequence: 30
+            }
+        )
+
+        column ASKED_ON (
+            type: hidden
+            layout {
+                sequence: 40
+            }
+        )
+    )
+
+    region ask (
+        name: Ask
+        type: staticContent
+        layout {
+            sequence: 40
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
         }
     )
 
@@ -56,11 +131,137 @@ page 40 (
         type: hidden
         layout {
             sequence: 10
-            region: @chat
+            region: @ask
             slot: regionBody
         }
         security {
             sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+
+    pageItem P40_QUESTION (
+        type: textarea
+        label {
+            label: Your question
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @ask
+            slot: regionBody
+            alignment: left
+        }
+        appearance {
+            template: @/optional-floating
+            templateOptions: #DEFAULT#
+        }
+        validation {
+            maxLength: 2000
+        }
+        help {
+            helpText: Claude answers only from this batch's validation facts. Ask in English or Arabic.
+        }
+    )
+
+    button ask (
+        buttonName: ASK
+        label: Ask Claude
+        layout {
+            sequence: 10
+            region: @ask
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text-with-icon
+            hot: true
+            templateOptions: [
+                #DEFAULT#
+                t-Button--iconLeft
+            ]
+            icon: fa-send
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button chip1 (
+        buttonName: CHIP1
+        label: Top 5 blocking issues
+        layout {
+            sequence: 20
+            region: @ask
+            slot: PREVIOUS
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: [
+                #DEFAULT#
+                t-Button--small
+            ]
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button chip2 (
+        buttonName: CHIP2
+        label: Explain the AP to GL difference
+        layout {
+            sequence: 30
+            region: @ask
+            slot: PREVIOUS
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: [
+                #DEFAULT#
+                t-Button--small
+            ]
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button chip3 (
+        buttonName: CHIP3
+        label: What should the client fix first?
+        layout {
+            sequence: 40
+            region: @ask
+            slot: PREVIOUS
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: [
+                #DEFAULT#
+                t-Button--small
+            ]
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
+    button chip4 (
+        buttonName: CHIP4
+        label: لخص الوضع بالعربي
+        layout {
+            sequence: 50
+            region: @ask
+            slot: PREVIOUS
+        }
+        appearance {
+            buttonTemplate: @/text
+            templateOptions: [
+                #DEFAULT#
+                t-Button--small
+            ]
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
         }
     )
 
@@ -76,45 +277,59 @@ page 40 (
         }
     )
 
-    computation batch-context (
-        itemName: FV_BATCH_CONTEXT
-        execution {
-            sequence: 20
-            point: beforeHeader
+    process ask-claude (
+        name: Ask Claude
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    l_status varchar2(1);
+                    l_msg    varchar2(4000);
+                begin
+                    xxx_fv_batch_api.ask_claude(
+                        :P40_BATCH_ID,
+                        case :REQUEST
+                            when 'CHIP1' then 'Top 5 blocking issues'
+                            when 'CHIP2' then 'Explain the AP to GL difference'
+                            when 'CHIP3' then 'What should the client fix first?'
+                            when 'CHIP4' then 'لخص الوضع بالعربي'
+                            else :P40_QUESTION
+                        end,
+                        :APP_USER, l_status, l_msg);
+                    if l_status = 'E' then
+                        apex_error.add_error(p_message          => l_msg,
+                                             p_display_location => apex_error.c_inline_in_notification);
+                    else
+                        :P40_QUESTION := null;
+                    end if;
+                end;
+                ```
         }
-        computation {
-            type: expression
-            language: plsql
-            plsqlExpression: dbms_lob.substr(xxx_fv_ai_pkg.get_batch_context(:P40_BATCH_ID), 30000, 1)
+        execution {
+            sequence: 10
+            point: afterSubmit
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: ASK,CHIP1,CHIP2,CHIP3,CHIP4
         }
     )
 
-    dynamicAction show-assistant (
-        name: Show AI Assistant
+    branch stay (
+        name: Stay on chat
         execution {
             sequence: 10
+            point: afterProcessing
         }
-        when {
-            event: ready
+        behavior {
+            target: {
+                page: 40
+                items: {
+                    P40_BATCH_ID: &P40_BATCH_ID.
+                }
+            }
         }
-
-        action show-ai-assistant (
-            action: showAiAssistant
-            execution {
-                sequence: 10
-            }
-            appearance {
-                displayAs: inline
-                containerSelector: #fv-chat .t-Region-body
-            }
-            genAI {
-                agent: @fv-batch-analyst
-            }
-            quickActions {
-                message1: Top 5 blocking issues
-                message2: Explain the AP to GL difference
-            }
-        )
     )
 
 )

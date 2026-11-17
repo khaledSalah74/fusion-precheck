@@ -26,10 +26,23 @@ create or replace package xxx_fv_ai_pkg authid definer as
         x_return_status  out varchar2,
         x_message        out varchar2);
 
+    -- x_mapped_count = headers Claude mapped; x_message explains the result
+    -- (and flags a likely wrong object when nothing could be mapped).
     procedure suggest_mapping (
         p_file_id        in  xxx_fv_files.file_id%type,
         p_user           in  varchar2,
         x_report_id      out xxx_fv_ai_reports.report_id%type,
+        x_mapped_count   out number,
+        x_return_status  out varchar2,
+        x_message        out varchar2);
+
+    -- "Ask Claude" chat: answers one question from the batch facts, with the user's
+    -- last turns on this batch as history. Each turn is saved as a CHAT row.
+    procedure ask_batch (
+        p_batch_id       in  xxx_fv_batches.batch_id%type,
+        p_question       in  varchar2,
+        p_user           in  varchar2,
+        x_answer         out clob,
         x_return_status  out varchar2,
         x_message        out varchar2);
 
@@ -553,18 +566,26 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
         p_file_id        in  xxx_fv_files.file_id%type,
         p_user           in  varchar2,
         x_report_id      out xxx_fv_ai_reports.report_id%type,
+        x_mapped_count   out number,
         x_return_status  out varchar2,
         x_message        out varchar2)
     is
-        l_started  timestamp with time zone := systimestamp;
-        l_batch_id xxx_fv_files.batch_id%type;
-        l_context  clob;
-        l_response clob;
-        l_error    varchar2(4000);
+        l_started   timestamp with time zone := systimestamp;
+        l_batch_id  xxx_fv_files.batch_id%type;
+        l_object    xxx_fv_files.object_code%type;
+        l_suggested xxx_fv_objects.object_code%type;
+        l_unmapped  number;
+        l_context   clob;
+        l_response  clob;
+        l_error     varchar2(4000);
     begin
         savepoint ai_mapping_sp;
 
-        select batch_id into l_batch_id from xxx_fv_files where file_id = p_file_id;
+        select batch_id, object_code into l_batch_id, l_object from xxx_fv_files where file_id = p_file_id;
+        select count(*) into l_unmapped
+          from xxx_fv_file_columns
+         where file_id = p_file_id
+           and mapped_column is null;
 
         l_context  := get_mapping_context(p_file_id);
         l_response := call_ai(
@@ -604,6 +625,16 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
                   fc.ai_confidence  = src.confidence,
                   fc.ai_reason      = src.reason
             where fc.mapped_column is null;
+        x_mapped_count := sql%rowcount;
+
+        x_message := 'Claude mapped ' || x_mapped_count || ' of ' || l_unmapped || ' unmapped headers.';
+        if x_mapped_count = 0 then
+            l_suggested := xxx_fv_file_adapter_pkg.suggest_object(p_file_id);
+            if l_suggested is not null and l_suggested <> l_object then
+                x_message := x_message || ' The headers look like ' || l_suggested
+                             || ', not ' || l_object || '. Check the object assigned to this sheet.';
+            end if;
+        end if;
 
         save_report(l_batch_id, p_file_id, xxx_fv_const_pkg.c_report_mapping, xxx_fv_const_pkg.c_lang_en,
                     xxx_fv_const_pkg.c_ai_completed, l_context, l_response, null,
@@ -622,6 +653,74 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
             x_return_status := 'E';
             x_message       := l_error;
     end suggest_mapping;
+
+    -- -------------------------------------------------------------------------
+    procedure ask_batch (
+        p_batch_id       in  xxx_fv_batches.batch_id%type,
+        p_question       in  varchar2,
+        p_user           in  varchar2,
+        x_answer         out clob,
+        x_return_status  out varchar2,
+        x_message        out varchar2)
+    is
+        l_started   timestamp with time zone := systimestamp;
+        l_history   clob;
+        l_report_id xxx_fv_ai_reports.report_id%type;
+        l_question  clob;
+        l_response  clob;
+        l_error     varchar2(4000);
+    begin
+        savepoint ai_chat_sp;
+        select json_object('question' value p_question returning clob) into l_question from dual;
+
+        -- last 6 turns of this user on this batch, oldest first
+        select listagg('User: ' || json_value(r.context_json, '$.question' returning varchar2(4000))
+                       || chr(10) || 'Assistant: '
+                       || json_value(r.response_json, '$.answer' returning varchar2(4000) truncate),
+                       chr(10) || chr(10) on overflow truncate)
+                 within group (order by r.report_id)
+          into l_history
+          from (select report_id, context_json, response_json
+                  from xxx_fv_ai_reports
+                 where batch_id = p_batch_id
+                   and report_type = xxx_fv_const_pkg.c_report_chat
+                   and status_code = xxx_fv_const_pkg.c_ai_completed
+                   and requested_by = p_user
+                 order by report_id desc
+                 fetch first 6 rows only) r;
+
+        x_answer := apex_ai.generate(
+            p_prompt            => case when l_history is not null
+                                        then 'Conversation so far:' || chr(10) || l_history || chr(10) || chr(10)
+                                   end
+                                   || 'Question: ' || p_question,
+            p_system_prompt     => 'You answer questions about one pre-Fusion data migration validation batch for '
+                                   || 'Oracle Fusion Cloud ERP. The batch facts are in the JSON below. Answer only from '
+                                   || 'those facts and quote counts and amounts exactly. If the answer is not in the '
+                                   || 'facts, say so and point the user to the Results or AI Report page. Reply in the '
+                                   || 'language the user writes in (Arabic or English). Keep object codes, rule codes '
+                                   || 'and column names in English. Be concise; use short bullet lists where helpful. '
+                                   || 'Plain text only, no markdown tables.'
+                                   || chr(10) || chr(10) || 'Batch facts (JSON):' || chr(10)
+                                   || get_batch_context(p_batch_id),
+            p_service_static_id => xxx_fv_const_pkg.c_ai_service_static_id);
+
+        select json_object('answer' value x_answer returning clob) into l_response from dual;
+        save_report(p_batch_id, null, xxx_fv_const_pkg.c_report_chat, xxx_fv_const_pkg.c_lang_en,
+                    xxx_fv_const_pkg.c_ai_completed, l_question, l_response,
+                    null, elapsed_ms(l_started), p_user, l_report_id);
+        x_return_status := 'S';
+    exception
+        when others then
+            l_error := sqlerrm;
+            rollback to ai_chat_sp;
+            xxx_fv_log_pkg.error('xxx_fv_ai_pkg.ask_batch', 'batch ' || p_batch_id);
+            save_report(p_batch_id, null, xxx_fv_const_pkg.c_report_chat, xxx_fv_const_pkg.c_lang_en,
+                        xxx_fv_const_pkg.c_ai_failed, l_question, null, l_error,
+                        elapsed_ms(l_started), p_user, l_report_id);
+            x_return_status := 'E';
+            x_message       := l_error;
+    end ask_batch;
 
 end xxx_fv_ai_pkg;
 /

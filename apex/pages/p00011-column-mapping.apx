@@ -34,6 +34,32 @@ page 11 (
         }
     )
 
+    region object-check (
+        name: Object check
+        type: staticContent
+        source {
+            htmlCode: The headers of this sheet match <strong>&P11_SUGGESTED_NAME.</strong> (&P11_SUGGESTED.), not the object assigned now. Use the suggested object so the columns map and the right rules run.
+        }
+        layout {
+            sequence: 5
+            slot: contentBody
+        }
+        appearance {
+            template: @/alert
+            templateOptions: [
+                #DEFAULT#
+                t-Alert--colorBG
+                t-Alert--horizontal
+                t-Alert--defaultIcons
+                t-Alert--warning
+            ]
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P11_SUGGESTED
+        }
+    )
+
     region mapping (
         name: Mapping
         type: interactiveGrid
@@ -392,6 +418,42 @@ page 11 (
         }
     )
 
+    pageItem P11_SUGGESTED (
+        type: hidden
+        layout {
+            sequence: 40
+            region: @object
+            slot: regionBody
+        }
+    )
+
+    pageItem P11_SUGGESTED_NAME (
+        type: hidden
+        layout {
+            sequence: 50
+            region: @object
+            slot: regionBody
+        }
+    )
+
+    button use-suggested (
+        buttonName: USE_SUGGESTED
+        label: Use suggested object
+        layout {
+            sequence: 10
+            region: @object-check
+            slot: NEXT
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+            templateOptions: #DEFAULT#
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+
     button assign-object (
         buttonName: ASSIGN_OBJECT
         label: Assign object
@@ -483,6 +545,62 @@ page 11 (
         }
     )
 
+    computation suggested-object (
+        itemName: P11_SUGGESTED
+        execution {
+            sequence: 20
+            point: beforeHeader
+        }
+        computation {
+            type: sqlQuerySingleValue
+            sqlQuery:
+                ```sql
+                select s.suggested
+                  from (select xxx_fv_file_adapter_pkg.suggest_object(f.file_id) suggested, f.object_code
+                          from xxx_fv_files f
+                         where f.file_id = :P11_FILE_ID) s
+                 where s.suggested is not null
+                   and s.suggested <> nvl(s.object_code, '-')
+                ```
+        }
+    )
+
+    computation suggested-object-name (
+        itemName: P11_SUGGESTED_NAME
+        execution {
+            sequence: 30
+            point: beforeHeader
+        }
+        computation {
+            type: sqlQuerySingleValue
+            sqlQuery:
+                ```sql
+                select object_name from xxx_fv_objects where object_code = :P11_SUGGESTED
+                ```
+        }
+    )
+
+    process use-suggested (
+        name: Use suggested object
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_batch_api.assign_object(:P11_FILE_ID, :P11_SUGGESTED, :APP_USER);
+                ```
+        }
+        execution {
+            sequence: 15
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Object changed to &P11_SUGGESTED_NAME. and headers re-mapped.
+        }
+        serverSideCondition {
+            whenButtonPressed: @use-suggested
+        }
+    )
+
     process save-mapping (
         name: Save mapping
         type: interactiveGridAutoRowProcessing
@@ -534,6 +652,8 @@ page 11 (
                     if l_status = 'E' then
                         apex_error.add_error(p_message          => 'Claude could not suggest a mapping: ' || l_msg,
                                              p_display_location => apex_error.c_inline_in_notification);
+                    else
+                        apex_application.g_print_success_message := apex_escape.html(l_msg);
                     end if;
                 end;
                 ```
@@ -541,9 +661,6 @@ page 11 (
         execution {
             sequence: 30
             point: afterSubmit
-        }
-        successMessage {
-            successMessage: Claude suggested mappings for the unmapped headers. Review them before validating.
         }
         serverSideCondition {
             whenButtonPressed: @suggest

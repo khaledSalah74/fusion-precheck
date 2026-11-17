@@ -28,3 +28,8 @@ file "css/guruhits.css" (
     mimeType: text/css
     charSet: utf-8
 )
+
+file "img/guruhits-logo.png" (
+    mimeType: image/png
+    charSet: utf-8
+)

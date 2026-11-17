@@ -104,9 +104,9 @@ page 20 (
                 select ru.title,
                        rr.recon_label,
                        rr.currency_code,
-                       rr.source_total,
-                       rr.target_total,
-                       rr.difference,
+                       to_char(rr.source_total, 'FM999G999G999G990D00') source_total,
+                       nvl(to_char(rr.target_total, 'FM999G999G999G990D00'), 'No GL balance') target_total,
+                       to_char(rr.difference, 'FM999G999G999G990D00') difference,
                        rr.status_code,
                        case rr.status_code when 'MATCHED' then 'fv-st-success' else 'fv-st-danger' end status_css
                   from xxx_fv_recon_results rr
@@ -176,9 +176,6 @@ page 20 (
                 sequence: 40
                 columnAlignment: end
             }
-            appearance {
-                formatMask: 999G999G999G990D00
-            }
         )
 
         column TARGET_TOTAL (
@@ -191,9 +188,6 @@ page 20 (
                 sequence: 50
                 columnAlignment: end
             }
-            appearance {
-                formatMask: 999G999G999G990D00
-            }
         )
 
         column DIFFERENCE (
@@ -205,9 +199,6 @@ page 20 (
             layout {
                 sequence: 60
                 columnAlignment: end
-            }
-            appearance {
-                formatMask: 999G999G999G990D00
             }
         )
 

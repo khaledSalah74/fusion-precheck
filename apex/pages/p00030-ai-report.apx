@@ -470,7 +470,8 @@ page 30 (
             type: sqlQuery
             sqlQuery:
                 ```sql
-                select dbms_lob.substr(json_serialize(context_json returning clob pretty), 32000, 1) context_json,
+                select dbms_lob.substr(json_serialize(context_json returning clob pretty), 3800, 1) context_json,
+       to_char(dbms_lob.getlength(context_json), 'FM999G999G990') || ' characters sent (first 3,800 shown)' context_size,
                        elapsed_ms,
                        requested_by,
                        to_char(requested_on, 'YYYY-MM-DD HH24:MI') requested_on
@@ -498,6 +499,16 @@ page 30 (
         messages {
             whenNoDataFound: Generate a report to see this section.
         }
+
+        column CONTEXT_SIZE (
+            type: plainText
+            heading {
+                heading: Size
+            }
+            layout {
+                sequence: 5
+            }
+        )
 
         column CONTEXT_JSON (
             type: plainText
@@ -599,7 +610,9 @@ page 30 (
                     items: {
                         P30_BATCH_ID: &P30_BATCH_ID.
                         P30_REPORT_ID: #REPORT_ID#
+                        P30_LANGUAGE: #LANGUAGE_CODE#
                     }
+                    request: HISTORY
                 }
                 linkText: <span class="fa fa-eye" aria-hidden="true"></span><span class="u-VisuallyHidden">Open report</span>
             }
@@ -751,6 +764,28 @@ page 30 (
         }
     )
 
+    dynamicAction language-change (
+        name: Show report in selected language
+        execution {
+            sequence: 10
+        }
+        when {
+            event: change
+            selectionType: items
+            items: P30_LANGUAGE
+        }
+        action submit (
+            action: submitPage
+            settings {
+                requestButtonName: LANGUAGE
+                showProcessing: true
+            }
+            execution {
+                sequence: 10
+            }
+        )
+    )
+
     computation set-current-batch (
         itemName: FV_BATCH_ID
         execution {
@@ -778,13 +813,14 @@ page 30 (
                  where batch_id = :P30_BATCH_ID
                    and report_type = 'BATCH_REPORT'
                    and status_code = 'COMPLETED'
-                 order by requested_on desc, report_id desc
+                   and language_code = nvl(:P30_LANGUAGE, 'EN')
+                 order by report_id desc
                  fetch first 1 row only
                 ```
         }
         serverSideCondition {
-            type: itemIsNull
-            item: P30_REPORT_ID
+            type: request!=Value
+            value: HISTORY
         }
     )
 
@@ -847,6 +883,7 @@ page 30 (
                 items: {
                     P30_BATCH_ID: &P30_BATCH_ID.
                     P30_REPORT_ID: &P30_REPORT_ID.
+                    P30_LANGUAGE: &P30_LANGUAGE.
                 }
             }
         }

@@ -51,6 +51,7 @@ create or replace package xxx_fv_const_pkg authid definer as
     c_ai_service_static_id constant varchar2(255) := 'CLAUDE';   -- Workspace Utilities > Generative AI Services
     c_report_batch         constant varchar2(20)  := 'BATCH_REPORT';
     c_report_mapping       constant varchar2(20)  := 'MAPPING';
+    c_report_chat          constant varchar2(20)  := 'CHAT';
     c_ai_completed         constant varchar2(20)  := 'COMPLETED';
     c_ai_failed            constant varchar2(20)  := 'FAILED';
     c_lang_en              constant varchar2(2)   := 'EN';

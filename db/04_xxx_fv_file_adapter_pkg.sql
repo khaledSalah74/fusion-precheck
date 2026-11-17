@@ -36,6 +36,10 @@ create or replace package xxx_fv_file_adapter_pkg authid definer as
     -- Re-reads the file and replaces its staging rows (idempotent).
     procedure stage_file (p_file_id in xxx_fv_files.file_id%type);
 
+    -- Object whose columns/aliases best match the file's headers, or null when there is
+    -- no clear winner. Used for detection on upload and to flag a likely wrong object.
+    function suggest_object (p_file_id in xxx_fv_files.file_id%type) return varchar2;
+
 end xxx_fv_file_adapter_pkg;
 /
 
@@ -217,39 +221,50 @@ create or replace package body xxx_fv_file_adapter_pkg as
     -- headers that match its columns or aliases. Each header counts 1/(number of objects
     -- it matches), so distinctive headers (LEDGER_NAME) outweigh shared ones (CURRENCY).
     -- Assigns only on a clear win: score >= 1.5 and >= 1.5 x the runner-up.
-    procedure detect_by_headers (p_file_id in xxx_fv_files.file_id%type) is
+    function suggest_object (p_file_id in xxx_fv_files.file_id%type) return varchar2 is
+        l_object xxx_fv_objects.object_code%type;
     begin
-        update xxx_fv_files f
-           set f.object_code = (
-                   with hdr as (select distinct fc.header_norm
-                                  from xxx_fv_file_columns fc
-                                 where fc.file_id = p_file_id
-                                   and fc.header_norm is not null),
-                        cand as (select c.object_code, c.column_name as name_norm from xxx_fv_columns c
-                                 union
-                                 select a.object_code, a.alias_norm from xxx_fv_column_aliases a),
-                        hit as (select distinct h.header_norm, k.object_code
-                                  from hdr h
-                                  join cand k
-                                    on k.name_norm = h.header_norm
-                                  join xxx_fv_objects o
-                                    on o.object_code = k.object_code
-                                   and o.is_enabled = 'Y'),
-                        scored as (select object_code, sum(wt) as score
-                                     from (select object_code, 1 / count(*) over (partition by header_norm) as wt
-                                             from hit)
-                                    group by object_code),
-                        ranked as (select object_code, score,
-                                          row_number() over (order by score desc, object_code) as rn,
-                                          lead(score) over (order by score desc, object_code) as next_score
-                                     from scored)
-                   select r.object_code
-                     from ranked r
-                    where r.rn = 1
-                      and r.score >= 1.5
-                      and (r.next_score is null or r.score >= 1.5 * r.next_score))
-         where f.file_id = p_file_id
-           and f.object_code is null;
+        with hdr as (select distinct fc.header_norm
+                       from xxx_fv_file_columns fc
+                      where fc.file_id = p_file_id
+                        and fc.header_norm is not null),
+             cand as (select c.object_code, c.column_name as name_norm from xxx_fv_columns c
+                      union
+                      select a.object_code, a.alias_norm from xxx_fv_column_aliases a),
+             hit as (select distinct h.header_norm, k.object_code
+                       from hdr h
+                       join cand k
+                         on k.name_norm = h.header_norm
+                       join xxx_fv_objects o
+                         on o.object_code = k.object_code
+                        and o.is_enabled = 'Y'),
+             scored as (select object_code, sum(wt) as score
+                          from (select object_code, 1 / count(*) over (partition by header_norm) as wt
+                                  from hit)
+                         group by object_code),
+             ranked as (select object_code, score,
+                               row_number() over (order by score desc, object_code) as rn,
+                               lead(score) over (order by score desc, object_code) as next_score
+                          from scored)
+        select max(r.object_code)
+          into l_object
+          from ranked r
+         where r.rn = 1
+           and r.score >= 1.5
+           and (r.next_score is null or r.score >= 1.5 * r.next_score);
+        return l_object;
+    end suggest_object;
+
+    -- -------------------------------------------------------------------------
+    procedure detect_by_headers (p_file_id in xxx_fv_files.file_id%type) is
+        l_object xxx_fv_objects.object_code%type := suggest_object(p_file_id);
+    begin
+        if l_object is not null then
+            update xxx_fv_files
+               set object_code = l_object
+             where file_id = p_file_id
+               and object_code is null;
+        end if;
     end detect_by_headers;
 
     -- -------------------------------------------------------------------------

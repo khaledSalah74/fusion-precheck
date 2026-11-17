@@ -75,6 +75,14 @@ create or replace package xxx_fv_batch_api authid definer as
         x_return_status  out varchar2,
         x_message        out varchar2);
 
+    -- Ask Claude chat turn (no status change).
+    procedure ask_claude (
+        p_batch_id       in  xxx_fv_batches.batch_id%type,
+        p_question       in  varchar2,
+        p_user           in  varchar2,
+        x_return_status  out varchar2,
+        x_message        out varchar2);
+
 end xxx_fv_batch_api;
 /
 
@@ -268,7 +276,12 @@ create or replace package body xxx_fv_batch_api as
         p_user         in varchar2)
     is
         l_batch_id xxx_fv_files.batch_id%type := batch_of_file(p_file_id);
+        l_current  xxx_fv_files.object_code%type;
     begin
+        select object_code into l_current from xxx_fv_files where file_id = p_file_id;
+        if l_current = p_object_code or (l_current is null and p_object_code is null) then
+            return;   -- nothing changes: keep the batch status (and its results)
+        end if;
         begin_change(l_batch_id, xxx_fv_const_pkg.c_status_files_loaded);
         xxx_fv_file_adapter_pkg.assign_object(p_file_id, p_object_code);
         set_status(l_batch_id, xxx_fv_const_pkg.c_status_files_loaded, p_user);
@@ -286,7 +299,15 @@ create or replace package body xxx_fv_batch_api as
         p_user             in varchar2)
     is
         l_batch_id xxx_fv_files.batch_id%type := batch_of_file(p_file_id);
+        l_current  xxx_fv_file_columns.mapped_column%type;
     begin
+        select mapped_column into l_current
+          from xxx_fv_file_columns
+         where file_id = p_file_id
+           and column_position = p_column_position;
+        if l_current = p_column_name or (l_current is null and p_column_name is null) then
+            return;   -- unchanged row submitted by the grid
+        end if;
         begin_change(l_batch_id, xxx_fv_const_pkg.c_status_files_loaded);
         xxx_fv_file_adapter_pkg.set_mapping(p_file_id, p_column_position, p_column_name);
         set_status(l_batch_id, xxx_fv_const_pkg.c_status_files_loaded, p_user);
@@ -305,10 +326,11 @@ create or replace package body xxx_fv_batch_api as
     is
         l_batch_id  xxx_fv_files.batch_id%type := batch_of_file(p_file_id);
         l_report_id xxx_fv_ai_reports.report_id%type;
+        l_mapped    number;
     begin
         begin_change(l_batch_id, xxx_fv_const_pkg.c_status_files_loaded);
-        xxx_fv_ai_pkg.suggest_mapping(p_file_id, p_user, l_report_id, x_return_status, x_message);
-        if x_return_status = 'S' then
+        xxx_fv_ai_pkg.suggest_mapping(p_file_id, p_user, l_report_id, l_mapped, x_return_status, x_message);
+        if x_return_status = 'S' and l_mapped > 0 then
             set_status(l_batch_id, xxx_fv_const_pkg.c_status_files_loaded, p_user);
         end if;
     exception
@@ -377,6 +399,24 @@ create or replace package body xxx_fv_batch_api as
             xxx_fv_log_pkg.error('xxx_fv_batch_api.generate_ai_report', to_char(p_batch_id));
             raise;
     end generate_ai_report;
+
+    -- -------------------------------------------------------------------------
+    procedure ask_claude (
+        p_batch_id       in  xxx_fv_batches.batch_id%type,
+        p_question       in  varchar2,
+        p_user           in  varchar2,
+        x_return_status  out varchar2,
+        x_message        out varchar2)
+    is
+        l_answer clob;
+    begin
+        if trim(p_question) is null then
+            x_return_status := 'E';
+            x_message       := 'Type a question first.';
+            return;
+        end if;
+        xxx_fv_ai_pkg.ask_batch(p_batch_id, substr(p_question, 1, 2000), p_user, l_answer, x_return_status, x_message);
+    end ask_claude;
 
 end xxx_fv_batch_api;
 /

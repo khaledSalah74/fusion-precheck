@@ -274,7 +274,7 @@ create table xxx_fv_ai_reports (
     constraint xxx_fv_ai_reports_pk  primary key (report_id),
     constraint xxx_fv_ai_reports_fk1 foreign key (batch_id) references xxx_fv_batches (batch_id) on delete cascade,
     constraint xxx_fv_ai_reports_fk2 foreign key (file_id)  references xxx_fv_files (file_id) on delete cascade,
-    constraint xxx_fv_ai_reports_ck1 check (report_type in ('BATCH_REPORT', 'MAPPING')),
+    constraint xxx_fv_ai_reports_ck1 check (report_type in ('BATCH_REPORT', 'MAPPING', 'CHAT')),
     constraint xxx_fv_ai_reports_ck2 check (language_code in ('EN', 'AR')),
     constraint xxx_fv_ai_reports_ck3 check (status_code in ('COMPLETED', 'FAILED')),
     constraint xxx_fv_ai_reports_ck4 check (context_json is json),
