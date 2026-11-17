@@ -39,6 +39,32 @@ page 30 (
         }
     )
 
+    region not-validated (
+        name: Validate first
+        type: staticContent
+        source {
+            htmlCode: Claude reports on validation results. Run <strong>Validate</strong> on the Files and Mapping tab first; the report button works once the batch is validated.
+        }
+        layout {
+            sequence: 25
+            slot: body
+        }
+        appearance {
+            template: @/alert
+            templateOptions: [
+                #DEFAULT#
+                t-Alert--colorBG
+                t-Alert--horizontal
+                t-Alert--defaultIcons
+                t-Alert--info
+            ]
+        }
+        serverSideCondition {
+            type: noRowsReturned
+            sqlQuery: select 1 from xxx_fv_batches where batch_id = :P30_BATCH_ID and status_code in ('VALIDATED', 'REPORTED')
+        }
+    )
+
     region generate (
         name: Generate with Claude
         type: staticContent
@@ -130,10 +156,10 @@ page 30 (
                           from json_table(m.actions, '$[*]' columns (rn for ordinality, txt varchar2(1000) path '$')) a) actions,
                        m.module || ' - ' || m.object_code module_label,
                        case m.status
-                           when 'BLOCKED' then 'u-danger'
-                           when 'WARNING' then 'u-warning'
-                           when 'OK'      then 'u-success'
-                           else 'u-normal'
+                           when 'BLOCKED' then 'fv-st-danger'
+                           when 'WARNING' then 'fv-st-warning'
+                           when 'OK'      then 'fv-st-success'
+                           else 'fv-st-neutral'
                        end status_css
                   from xxx_fv_ai_reports r
                  cross apply json_table(r.response_json, '$.modules[*]' columns (
@@ -205,9 +231,9 @@ page 30 (
                        i.impact,
                        'Impact ' || i.impact impact_label,
                        case i.impact
-                           when 'HIGH'   then 'u-danger'
-                           when 'MEDIUM' then 'u-warning'
-                           else 'u-info'
+                           when 'HIGH'   then 'fv-st-danger'
+                           when 'MEDIUM' then 'fv-st-warning'
+                           else 'fv-st-info'
                        end impact_css
                   from xxx_fv_ai_reports r
                  cross apply json_table(r.response_json, '$.insights[*]' columns (
@@ -444,7 +470,7 @@ page 30 (
             type: sqlQuery
             sqlQuery:
                 ```sql
-                select json_serialize(context_json returning clob pretty) context_json,
+                select dbms_lob.substr(json_serialize(context_json returning clob pretty), 32000, 1) context_json,
                        elapsed_ms,
                        requested_by,
                        to_char(requested_on, 'YYYY-MM-DD HH24:MI') requested_on
@@ -722,10 +748,6 @@ page 30 (
         }
         behavior {
             warnOnUnsavedChanges: doNotCheck
-        }
-        serverSideCondition {
-            type: rowsReturned
-            sqlQuery: select 1 from xxx_fv_batches where batch_id = :P30_BATCH_ID and status_code in ('VALIDATED', 'REPORTED')
         }
     )
 

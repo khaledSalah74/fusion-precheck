@@ -108,7 +108,7 @@ page 20 (
                        rr.target_total,
                        rr.difference,
                        rr.status_code,
-                       case rr.status_code when 'MATCHED' then 'u-success' else 'u-danger' end status_css
+                       case rr.status_code when 'MATCHED' then 'fv-st-success' else 'fv-st-danger' end status_css
                   from xxx_fv_recon_results rr
                   join xxx_fv_rules ru
                     on ru.rule_code = rr.rule_code
@@ -542,7 +542,7 @@ page 20 (
 
     button revalidate (
         buttonName: REVALIDATE
-        label: Re-validate
+        label: Run validation
         layout {
             sequence: 10
             region: @breadcrumb

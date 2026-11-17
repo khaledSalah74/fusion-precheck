@@ -254,7 +254,9 @@ create or replace package body xxx_fv_rules_pkg as
     -- Rule SQL is admin configuration (code, not values). Values stay bound (CON-01);
     -- the text is screened here and only admins can edit rules (APEX authorization).
     procedure assert_safe_sql (p_rule_code in varchar2, p_sql in clob) is
-        l_sql clob := lower(p_sql);
+        -- screen code only: string literals ('...; supplier ...') are blanked first, so text
+        -- inside messages cannot trip the ";" / package checks ('' escapes stay balanced)
+        l_sql clob := regexp_replace(lower(p_sql), '''[^'']*''', '''''');
     begin
         if not regexp_like(l_sql, '^\s*(select|with)\s')
            or instr(l_sql, ';') > 0
@@ -319,6 +321,7 @@ create or replace package body xxx_fv_rules_pkg as
     -- -------------------------------------------------------------------------
     procedure run_custom_rules (p_batch_id in xxx_fv_batches.batch_id%type) is
         l_rule xxx_fv_rules%rowtype;
+        l_err  varchar2(1000);
     begin
         -- one statement per configured rule: a loop is inherent to plug-in rules (CON-03)
         for r in (select ru.rule_code
@@ -333,12 +336,25 @@ create or replace package body xxx_fv_rules_pkg as
                    order by ru.run_order, ru.rule_code)
         loop
             select * into l_rule from xxx_fv_rules where rule_code = r.rule_code;
-            assert_safe_sql(l_rule.rule_code, l_rule.rule_sql);
-            if l_rule.rule_type = xxx_fv_const_pkg.c_rule_type_row_sql then
-                run_row_rule(p_batch_id, l_rule);
-            else
-                run_recon_rule(p_batch_id, l_rule);
-            end if;
+            -- one broken plug-in rule must not abort the whole validation: log it, report it
+            -- as an ERROR issue on the batch and continue (deliberate exception to log+RAISE)
+            savepoint before_rule;
+            begin
+                assert_safe_sql(l_rule.rule_code, l_rule.rule_sql);
+                if l_rule.rule_type = xxx_fv_const_pkg.c_rule_type_row_sql then
+                    run_row_rule(p_batch_id, l_rule);
+                else
+                    run_recon_rule(p_batch_id, l_rule);
+                end if;
+            exception
+                when others then
+                    xxx_fv_log_pkg.error('xxx_fv_rules_pkg.run_custom_rules', l_rule.rule_code);
+                    l_err := substr('Rule could not run and was skipped: ' || sqlerrm, 1, 1000);
+                    rollback to before_rule;
+                    insert into xxx_fv_issues (batch_id, object_code, rule_code, severity, message)
+                    values (p_batch_id, l_rule.object_code, l_rule.rule_code, xxx_fv_const_pkg.c_sev_error,
+                            l_err);
+            end;
         end loop;
     end run_custom_rules;
 

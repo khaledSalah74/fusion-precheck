@@ -43,13 +43,13 @@ page 1 (
             type: sqlQuery
             sqlQuery:
                 ```sql
-                select 1 seq, 'Batches' label, count(*) value, 'u-normal' css from xxx_fv_batches
+                select 1 seq, 'Batches' label, count(*) value, 'fv-st-neutral' css from xxx_fv_batches
                 union all
-                select 2, 'Ready', count(case when readiness_status = 'READY' then 1 end), 'u-success' from xxx_fv_batches
+                select 2, 'Ready', count(case when readiness_status = 'READY' then 1 end), 'fv-st-success' from xxx_fv_batches
                 union all
-                select 3, 'Ready with warnings', count(case when readiness_status = 'READY_WITH_WARNINGS' then 1 end), 'u-warning' from xxx_fv_batches
+                select 3, 'Ready with warnings', count(case when readiness_status = 'READY_WITH_WARNINGS' then 1 end), 'fv-st-warning' from xxx_fv_batches
                 union all
-                select 4, 'Not ready', count(case when readiness_status = 'NOT_READY' then 1 end), 'u-danger' from xxx_fv_batches
+                select 4, 'Not ready', count(case when readiness_status = 'NOT_READY' then 1 end), 'fv-st-danger' from xxx_fv_batches
                 order by 1
                 ```
         }
@@ -102,9 +102,9 @@ page 1 (
                            else b.readiness_score || ' · ' || b.readiness_status
                        end readiness_label,
                        case b.readiness_status
-                           when 'NOT_READY'           then 'u-danger'
-                           when 'READY_WITH_WARNINGS' then 'u-warning'
-                           when 'READY'               then 'u-success'
+                           when 'NOT_READY'           then 'fv-st-danger'
+                           when 'READY_WITH_WARNINGS' then 'fv-st-warning'
+                           when 'READY'               then 'fv-st-success'
                        end readiness_css
                   from xxx_fv_batches b
                   join xxx_fv_batch_statuses s

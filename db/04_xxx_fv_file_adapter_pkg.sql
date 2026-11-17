@@ -213,6 +213,46 @@ create or replace package body xxx_fv_file_adapter_pkg as
     end auto_map;
 
     -- -------------------------------------------------------------------------
+    -- Fallback when the sheet/file name names no object: score each object by the
+    -- headers that match its columns or aliases. Each header counts 1/(number of objects
+    -- it matches), so distinctive headers (LEDGER_NAME) outweigh shared ones (CURRENCY).
+    -- Assigns only on a clear win: score >= 1.5 and >= 1.5 x the runner-up.
+    procedure detect_by_headers (p_file_id in xxx_fv_files.file_id%type) is
+    begin
+        update xxx_fv_files f
+           set f.object_code = (
+                   with hdr as (select distinct fc.header_norm
+                                  from xxx_fv_file_columns fc
+                                 where fc.file_id = p_file_id
+                                   and fc.header_norm is not null),
+                        cand as (select c.object_code, c.column_name as name_norm from xxx_fv_columns c
+                                 union
+                                 select a.object_code, a.alias_norm from xxx_fv_column_aliases a),
+                        hit as (select distinct h.header_norm, k.object_code
+                                  from hdr h
+                                  join cand k
+                                    on k.name_norm = h.header_norm
+                                  join xxx_fv_objects o
+                                    on o.object_code = k.object_code
+                                   and o.is_enabled = 'Y'),
+                        scored as (select object_code, sum(wt) as score
+                                     from (select object_code, 1 / count(*) over (partition by header_norm) as wt
+                                             from hit)
+                                    group by object_code),
+                        ranked as (select object_code, score,
+                                          row_number() over (order by score desc, object_code) as rn,
+                                          lead(score) over (order by score desc, object_code) as next_score
+                                     from scored)
+                   select r.object_code
+                     from ranked r
+                    where r.rn = 1
+                      and r.score >= 1.5
+                      and (r.next_score is null or r.score >= 1.5 * r.next_score))
+         where f.file_id = p_file_id
+           and f.object_code is null;
+    end detect_by_headers;
+
+    -- -------------------------------------------------------------------------
     procedure register_document (
         p_batch_id     in  xxx_fv_batches.batch_id%type,
         p_file_name    in  xxx_fv_documents.file_name%type,
@@ -257,6 +297,7 @@ create or replace package body xxx_fv_file_adapter_pkg as
                    order by file_id)
         loop
             capture_headers(f.file_id);
+            detect_by_headers(f.file_id);
             auto_map(f.file_id);
         end loop;
     end register_document;

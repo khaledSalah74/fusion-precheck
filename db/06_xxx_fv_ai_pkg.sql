@@ -171,21 +171,29 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
     end mapping_system_prompt;
 
     -- -------------------------------------------------------------------------
-    -- Strips ``` fences if a provider adds them, then checks it is a JSON object.
+    -- Strips ``` fences and any text around the outermost {...}, then checks it is a JSON
+    -- object. On failure the raw answer goes into the error text (saved on the report row).
     function clean_json (p_text in clob) return clob is
-        l_text clob := regexp_replace(p_text, '^\s*```(json)?\s*|\s*```\s*$', '');
-        l_obj  json_object_t;
+        l_text  clob := regexp_replace(p_text, '^\s*```(json)?\s*|\s*```\s*$', '');
+        l_start integer;
+        l_end   integer;
+        l_obj   json_object_t;
     begin
+        l_start := dbms_lob.instr(l_text, '{');
+        l_end   := dbms_lob.instr(l_text, '}', -1);
+        if l_start > 0 and l_end > l_start then
+            l_text := dbms_lob.substr(l_text, l_end - l_start + 1, l_start);
+        end if;
         l_obj := json_object_t.parse(l_text);
         return l_text;
     exception
         when others then
             raise_application_error(xxx_fv_const_pkg.c_err_ai_response,
-                'The AI response is not valid JSON: ' || dbms_lob.substr(p_text, 300, 1));
+                'The AI response is not valid JSON. Raw response: ' || dbms_lob.substr(p_text, 3000, 1));
     end clean_json;
 
     -- -------------------------------------------------------------------------
-    function elapsed_ms (p_started in timestamp) return number is
+    function elapsed_ms (p_started in timestamp with time zone) return number is
         l_diff interval day(3) to second(3) := systimestamp - p_started;
     begin
         return round(extract(day from l_diff) * 86400000 + extract(hour from l_diff) * 3600000
@@ -199,13 +207,18 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
         p_schema        in clob) return clob
     is
     begin
+        -- The schema goes into the instructions instead of p_response_json_schema: APEX_AI's
+        -- strict validation (ORA-20959) rejected usable answers and hid the raw text. We parse
+        -- leniently ourselves (clean_json + json_table). No p_temperature: current Claude
+        -- models reject it (HTTP 400 "temperature is deprecated").
         return clean_json(
                    apex_ai.generate(
-                       p_prompt               => p_prompt,
-                       p_system_prompt        => p_system_prompt,
-                       p_service_static_id    => xxx_fv_const_pkg.c_ai_service_static_id,
-                       -- no p_temperature: current Claude models reject it (HTTP 400 "temperature is deprecated")
-                       p_response_json_schema => p_schema));
+                       p_prompt            => p_prompt,
+                       p_system_prompt     => p_system_prompt || chr(10) || chr(10)
+                                              || 'Respond with exactly one JSON object and nothing else '
+                                              || '(no markdown, no commentary). It must follow this JSON Schema:'
+                                              || chr(10) || p_schema,
+                       p_service_static_id => xxx_fv_const_pkg.c_ai_service_static_id));
     end call_ai;
 
     -- -------------------------------------------------------------------------
@@ -504,7 +517,7 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
         x_return_status  out varchar2,
         x_message        out varchar2)
     is
-        l_started  timestamp := systimestamp;
+        l_started  timestamp with time zone := systimestamp;
         l_context  clob;
         l_response clob;
         l_error    varchar2(4000);
@@ -542,7 +555,7 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
         x_return_status  out varchar2,
         x_message        out varchar2)
     is
-        l_started  timestamp := systimestamp;
+        l_started  timestamp with time zone := systimestamp;
         l_batch_id xxx_fv_files.batch_id%type;
         l_context  clob;
         l_response clob;

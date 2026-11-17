@@ -47,6 +47,9 @@ page 40 (
             template: @/standard
             templateOptions: #DEFAULT#
         }
+        advanced {
+            htmlDomId: fv-chat
+        }
     )
 
     pageItem P40_BATCH_ID (
@@ -102,7 +105,7 @@ page 40 (
             }
             appearance {
                 displayAs: inline
-                containerSelector: #chat
+                containerSelector: #fv-chat .t-Region-body
             }
             genAI {
                 agent: @fv-batch-analyst
