@@ -360,11 +360,11 @@ page 11 (
     )
 
     region buttons (
-        name: Buttons
+        name: Actions
         type: staticContent
         layout {
-            sequence: 40
-            slot: REGION_POSITION_03
+            sequence: 15
+            slot: contentBody
         }
         appearance {
             template: @/buttons-container
