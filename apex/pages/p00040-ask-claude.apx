@@ -15,6 +15,62 @@ page 40 (
         pageAccessProtection: argumentsMustHaveChecksum
         formAutoComplete: false
     }
+    javaScript {
+        executeWhenPageLoads:
+            ```javascript
+            (function ($) {
+                var REGION = 'fv-conversation';
+                var $input = $('#fv-chat-input');
+                var $send = $('#fv-chat-send');
+                var busy = false;
+
+                function body() { return $('#' + REGION + ' .t-Region-body'); }
+                function scrollDown() { var b = body()[0]; if (b) { b.scrollTop = b.scrollHeight; } }
+                function grow() { var el = $input[0]; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 160) + 'px'; }
+
+                function send(question) {
+                    question = (question || '').trim();
+                    if (!question || busy) { return; }
+                    busy = true;
+                    $send.prop('disabled', true);
+                    $input.val('');
+                    grow();
+                    body().find('.t-Report-report, .nodatafound').last().after(
+                        '<div class="fv-pending">' +
+                        '<div class="fv-row fv-row--user"><div class="fv-bubble" dir="auto">' + apex.util.escapeHTML(question) + '</div></div>' +
+                        '<div class="fv-row fv-row--ai"><div class="fv-avatar" aria-hidden="true">C</div>' +
+                        '<div class="fv-bubble fv-typing" aria-label="Claude is typing"><span></span><span></span><span></span></div></div>' +
+                        '</div>');
+                    body().find('.nodatafound').hide();
+                    scrollDown();
+                    apex.server.process('ASK', { x01: question, pageItems: '#P40_BATCH_ID' }, { dataType: 'json' })
+                        .done(function (d) {
+                            if (d && d.status === 'E') {
+                                apex.message.showErrors([{ type: 'error', location: 'page', message: d.message, unsafe: false }]);
+                            }
+                        })
+                        .fail(function () {
+                            apex.message.showErrors([{ type: 'error', location: 'page', message: 'Claude could not be reached. Try again.', unsafe: false }]);
+                        })
+                        .always(function () {
+                            busy = false;
+                            $send.prop('disabled', false);
+                            apex.region(REGION).refresh();
+                            $input.trigger('focus');
+                        });
+                }
+
+                $input.on('input', grow).on('keydown', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send($input.val()); }
+                });
+                $send.on('click', function () { send($input.val()); });
+                $(document).on('click', '.fv-chip', function () { send($(this).data('q')); });
+                $('#' + REGION).on('apexafterrefresh', scrollDown);
+                scrollDown();
+                $input.trigger('focus');
+            })(apex.jQuery);
+            ```
+    }
 
     region breadcrumb (
         name: Ask Claude
@@ -37,25 +93,33 @@ page 40 (
     )
 
     region conversation (
-        name: Conversation
+        name: Claude - batch analyst
         type: classicReport
         source {
             location: localDatabase
             type: sqlQuery
             sqlQuery:
                 ```sql
-                select r.report_id,
-                       json_value(r.context_json, '$.question' returning varchar2(4000)) question,
-                       case r.status_code
-                           when 'COMPLETED' then json_value(r.response_json, '$.answer' returning varchar2(32000) truncate)
-                           else 'Claude could not answer: ' || r.error_message
-                       end answer,
-                       to_char(r.requested_on, 'YYYY-MM-DD HH24:MI') asked_on
-                  from xxx_fv_ai_reports r
-                 where r.batch_id = :P40_BATCH_ID
-                   and r.report_type = 'CHAT'
-                   and r.requested_by = :APP_USER
-                 order by r.report_id
+                select report_id,
+                       question,
+                       answer,
+                       answer_css,
+                       asked_on
+                  from (select r.report_id,
+                               json_value(r.context_json, '$.question' returning varchar2(4000)) question,
+                               case r.status_code
+                                   when 'COMPLETED' then json_value(r.response_json, '$.answer' returning varchar2(32000) truncate)
+                                   else 'Sorry, I could not answer that: ' || r.error_message
+                               end answer,
+                               case r.status_code when 'COMPLETED' then 'fv-bubble' else 'fv-bubble fv-bubble--error' end answer_css,
+                               to_char(r.requested_on, 'DD Mon HH24:MI') asked_on
+                          from xxx_fv_ai_reports r
+                         where r.batch_id = :P40_BATCH_ID
+                           and r.report_type = 'CHAT'
+                           and r.requested_by = :APP_USER
+                         order by r.report_id desc
+                         fetch first 100 rows only)
+                 order by report_id
                 ```
             pageItemsToSubmit: P40_BATCH_ID
         }
@@ -68,6 +132,9 @@ page 40 (
             templateOptions: #DEFAULT#
             cssClasses: fv-chat
         }
+        advanced {
+            htmlDomId: fv-conversation
+        }
         componentAppearance {
             template: @/standard
             templateOptions: [
@@ -75,8 +142,14 @@ page 40 (
                 t-Report--stretch
             ]
         }
+        reportLayout {
+            numberOfRows: 100
+        }
+        pagination {
+            type: rowRangesXToYNoPagination
+        }
         messages {
-            whenNoDataFound: Ask anything about this batch, for example "Which supplier issues block the load?" or "لماذا لا يتطابق رصيد الموردين مع الأستاذ العام؟"
+            whenNoDataFound: <div class="fv-row fv-row--ai"><div class="fv-avatar" aria-hidden="true">C</div><div class="fv-bubble" dir="auto">Hi, I am Claude. Ask me anything about this batch, for example "Which supplier issues block the load?" or "لماذا لا يتطابق رصيد الموردين مع الأستاذ العام؟"</div></div>
         }
 
         column REPORT_ID (
@@ -95,7 +168,7 @@ page 40 (
                 sequence: 20
             }
             columnFormatting {
-                htmlExpression: <div class="fv-msg fv-msg--user">#QUESTION#</div><div class="fv-msg fv-msg--ai">#ANSWER#</div><div class="fv-msg-time">#ASKED_ON#</div>
+                htmlExpression: <div class="fv-row fv-row--user"><div class="fv-bubble" dir="auto">#QUESTION#</div></div><div class="fv-row fv-row--ai"><div class="fv-avatar" aria-hidden="true">C</div><div class="fv-msg-col"><div class="#ANSWER_CSS#" dir="auto">#ANSWER#</div><div class="fv-time">#ASKED_ON#</div></div></div>
             }
         )
 
@@ -106,24 +179,48 @@ page 40 (
             }
         )
 
-        column ASKED_ON (
+        column ANSWER_CSS (
             type: hidden
             layout {
                 sequence: 40
             }
         )
+
+        column ASKED_ON (
+            type: hidden
+            layout {
+                sequence: 50
+            }
+        )
     )
 
-    region ask (
-        name: Ask
+    region composer (
+        name: Message
         type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <div class="fv-chips" role="group" aria-label="Suggested questions">
+                  <button type="button" class="fv-chip" data-q="Top 5 blocking issues">Top 5 blocking issues</button>
+                  <button type="button" class="fv-chip" data-q="Explain the AP to GL difference">Explain the AP to GL difference</button>
+                  <button type="button" class="fv-chip" data-q="What should the client fix first?">What should the client fix first?</button>
+                  <button type="button" class="fv-chip" data-q="لخص الوضع بالعربي" dir="rtl">لخص الوضع بالعربي</button>
+                </div>
+                <div class="fv-composer">
+                  <textarea id="fv-chat-input" rows="1" dir="auto" maxlength="2000" placeholder="Message Claude about this batch..." aria-label="Message"></textarea>
+                  <button type="button" id="fv-chat-send" class="fv-send" aria-label="Send" title="Send (Enter)"><span class="fa fa-send" aria-hidden="true"></span></button>
+                </div>
+                <div class="fv-hint">Enter to send, Shift+Enter for a new line. Claude answers only from this batch's validation facts.</div>
+                ```
+        }
         layout {
             sequence: 40
             slot: body
         }
         appearance {
-            template: @/standard
+            template: @/blank-with-attributes
             templateOptions: #DEFAULT#
+            cssClasses: fv-composer-region
         }
     )
 
@@ -131,137 +228,11 @@ page 40 (
         type: hidden
         layout {
             sequence: 10
-            region: @ask
+            region: @composer
             slot: regionBody
         }
         security {
             sessionStateProtection: checksumRequiredSessionLevel
-        }
-    )
-
-    pageItem P40_QUESTION (
-        type: textarea
-        label {
-            label: Your question
-            alignment: left
-        }
-        layout {
-            sequence: 20
-            region: @ask
-            slot: regionBody
-            alignment: left
-        }
-        appearance {
-            template: @/optional-floating
-            templateOptions: #DEFAULT#
-        }
-        validation {
-            maxLength: 2000
-        }
-        help {
-            helpText: Claude answers only from this batch's validation facts. Ask in English or Arabic.
-        }
-    )
-
-    button ask (
-        buttonName: ASK
-        label: Ask Claude
-        layout {
-            sequence: 10
-            region: @ask
-            slot: NEXT
-        }
-        appearance {
-            buttonTemplate: @/text-with-icon
-            hot: true
-            templateOptions: [
-                #DEFAULT#
-                t-Button--iconLeft
-            ]
-            icon: fa-send
-        }
-        behavior {
-            warnOnUnsavedChanges: doNotCheck
-        }
-    )
-
-    button chip1 (
-        buttonName: CHIP1
-        label: Top 5 blocking issues
-        layout {
-            sequence: 20
-            region: @ask
-            slot: PREVIOUS
-        }
-        appearance {
-            buttonTemplate: @/text
-            templateOptions: [
-                #DEFAULT#
-                t-Button--small
-            ]
-        }
-        behavior {
-            warnOnUnsavedChanges: doNotCheck
-        }
-    )
-
-    button chip2 (
-        buttonName: CHIP2
-        label: Explain the AP to GL difference
-        layout {
-            sequence: 30
-            region: @ask
-            slot: PREVIOUS
-        }
-        appearance {
-            buttonTemplate: @/text
-            templateOptions: [
-                #DEFAULT#
-                t-Button--small
-            ]
-        }
-        behavior {
-            warnOnUnsavedChanges: doNotCheck
-        }
-    )
-
-    button chip3 (
-        buttonName: CHIP3
-        label: What should the client fix first?
-        layout {
-            sequence: 40
-            region: @ask
-            slot: PREVIOUS
-        }
-        appearance {
-            buttonTemplate: @/text
-            templateOptions: [
-                #DEFAULT#
-                t-Button--small
-            ]
-        }
-        behavior {
-            warnOnUnsavedChanges: doNotCheck
-        }
-    )
-
-    button chip4 (
-        buttonName: CHIP4
-        label: لخص الوضع بالعربي
-        layout {
-            sequence: 50
-            region: @ask
-            slot: PREVIOUS
-        }
-        appearance {
-            buttonTemplate: @/text
-            templateOptions: [
-                #DEFAULT#
-                t-Button--small
-            ]
-        }
-        behavior {
-            warnOnUnsavedChanges: doNotCheck
         }
     )
 
@@ -277,8 +248,8 @@ page 40 (
         }
     )
 
-    process ask-claude (
-        name: Ask Claude
+    process ask (
+        name: ASK
         type: executeCode
         source {
             plsqlCode:
@@ -287,48 +258,17 @@ page 40 (
                     l_status varchar2(1);
                     l_msg    varchar2(4000);
                 begin
-                    xxx_fv_batch_api.ask_claude(
-                        :P40_BATCH_ID,
-                        case :REQUEST
-                            when 'CHIP1' then 'Top 5 blocking issues'
-                            when 'CHIP2' then 'Explain the AP to GL difference'
-                            when 'CHIP3' then 'What should the client fix first?'
-                            when 'CHIP4' then 'لخص الوضع بالعربي'
-                            else :P40_QUESTION
-                        end,
-                        :APP_USER, l_status, l_msg);
-                    if l_status = 'E' then
-                        apex_error.add_error(p_message          => l_msg,
-                                             p_display_location => apex_error.c_inline_in_notification);
-                    else
-                        :P40_QUESTION := null;
-                    end if;
+                    xxx_fv_batch_api.ask_claude(:P40_BATCH_ID, apex_application.g_x01, :APP_USER, l_status, l_msg);
+                    apex_json.open_object;
+                    apex_json.write('status', l_status);
+                    apex_json.write('message', l_msg);
+                    apex_json.close_object;
                 end;
                 ```
         }
         execution {
             sequence: 10
-            point: afterSubmit
-        }
-        serverSideCondition {
-            type: requestIsContainedInValue
-            value: ASK,CHIP1,CHIP2,CHIP3,CHIP4
-        }
-    )
-
-    branch stay (
-        name: Stay on chat
-        execution {
-            sequence: 10
-            point: afterProcessing
-        }
-        behavior {
-            target: {
-                page: 40
-                items: {
-                    P40_BATCH_ID: &P40_BATCH_ID.
-                }
-            }
+            point: ajaxCallback
         }
     )
 
