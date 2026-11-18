@@ -56,7 +56,8 @@ create or replace package body xxx_fv_rules_pkg as
             on r.rule_code = xxx_fv_const_pkg.c_rule_unknown_object
            and r.is_enabled = 'Y'
          where f.batch_id = p_batch_id
-           and f.object_code is null;
+           and f.object_code is null
+           and f.is_ignored = 'N';                 -- sheets the user ignored are not migration data
 
         insert into xxx_fv_issues (batch_id, file_id, object_code, column_name, rule_code, severity, message)
         select f.batch_id, f.file_id, f.object_code, c.column_name, r.rule_code, r.severity,

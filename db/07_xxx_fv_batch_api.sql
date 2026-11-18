@@ -75,6 +75,12 @@ create or replace package xxx_fv_batch_api authid definer as
         x_return_status  out varchar2,
         x_message        out varchar2);
 
+    -- Ignore (p_ignored = 'Y') or include again ('N') a sheet; no-op when unchanged.
+    procedure ignore_file (
+        p_file_id  in xxx_fv_files.file_id%type,
+        p_ignored  in xxx_fv_files.is_ignored%type,
+        p_user     in varchar2);
+
     -- Ask Claude chat turn (no status change).
     procedure ask_claude (
         p_batch_id       in  xxx_fv_batches.batch_id%type,
@@ -350,7 +356,7 @@ create or replace package body xxx_fv_batch_api as
         dbms_application_info.set_module(c_module, 'validate batch ' || p_batch_id);   -- CON-07
 
         -- each file is parsed separately, so staging loops over files (CON-03)
-        for f in (select file_id from xxx_fv_files where batch_id = p_batch_id order by file_id) loop
+        for f in (select file_id from xxx_fv_files where batch_id = p_batch_id and is_ignored = 'N' order by file_id) loop
             dbms_application_info.set_action('stage file ' || f.file_id);
             xxx_fv_file_adapter_pkg.stage_file(f.file_id);
         end loop;
@@ -417,6 +423,31 @@ create or replace package body xxx_fv_batch_api as
         end if;
         xxx_fv_ai_pkg.ask_batch(p_batch_id, substr(p_question, 1, 2000), p_user, l_answer, x_return_status, x_message);
     end ask_claude;
+
+    -- -------------------------------------------------------------------------
+    procedure ignore_file (
+        p_file_id  in xxx_fv_files.file_id%type,
+        p_ignored  in xxx_fv_files.is_ignored%type,
+        p_user     in varchar2)
+    is
+        l_batch_id xxx_fv_files.batch_id%type := batch_of_file(p_file_id);
+        l_current  xxx_fv_files.is_ignored%type;
+    begin
+        if p_ignored not in ('Y', 'N') or p_ignored is null then
+            raise_application_error(xxx_fv_const_pkg.c_err_bad_parameter, 'p_ignored must be Y or N.');
+        end if;
+        select is_ignored into l_current from xxx_fv_files where file_id = p_file_id;
+        if l_current = p_ignored then
+            return;   -- nothing changes: keep the batch status
+        end if;
+        begin_change(l_batch_id, xxx_fv_const_pkg.c_status_files_loaded);
+        xxx_fv_file_adapter_pkg.set_ignored(p_file_id, p_ignored);
+        set_status(l_batch_id, xxx_fv_const_pkg.c_status_files_loaded, p_user);
+    exception
+        when others then
+            xxx_fv_log_pkg.error('xxx_fv_batch_api.ignore_file', p_file_id || ':' || p_ignored);
+            raise;
+    end ignore_file;
 
 end xxx_fv_batch_api;
 /

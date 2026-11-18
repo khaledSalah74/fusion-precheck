@@ -160,12 +160,14 @@ create table xxx_fv_files (
     sheet_display_name  varchar2(200),
     sheet_file_name     varchar2(200),
     object_code         varchar2(30),
+    is_ignored          varchar2(1)    default 'N' not null,
     row_count           number,
     staged_on           date,
     constraint xxx_fv_files_pk  primary key (file_id),
     constraint xxx_fv_files_fk1 foreign key (batch_id)    references xxx_fv_batches (batch_id) on delete cascade,
     constraint xxx_fv_files_fk2 foreign key (document_id) references xxx_fv_documents (document_id) on delete cascade,
-    constraint xxx_fv_files_fk3 foreign key (object_code) references xxx_fv_objects (object_code)
+    constraint xxx_fv_files_fk3 foreign key (object_code) references xxx_fv_objects (object_code),
+    constraint xxx_fv_files_ck1 check (is_ignored in ('Y', 'N'))
 );
 create index xxx_fv_files_n1 on xxx_fv_files (batch_id, object_code);
 create index xxx_fv_files_n2 on xxx_fv_files (object_code);

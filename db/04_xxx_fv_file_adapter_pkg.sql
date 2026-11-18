@@ -36,6 +36,13 @@ create or replace package xxx_fv_file_adapter_pkg authid definer as
     -- Re-reads the file and replaces its staging rows (idempotent).
     procedure stage_file (p_file_id in xxx_fv_files.file_id%type);
 
+    -- Ignore a sheet that is not migration data (notes, cover pages): clears its object,
+    -- mapping and staging so no check sees it. p_ignored = 'N' includes it again and
+    -- re-runs object detection and auto-mapping.
+    procedure set_ignored (
+        p_file_id  in xxx_fv_files.file_id%type,
+        p_ignored  in xxx_fv_files.is_ignored%type);
+
     -- Object whose columns/aliases best match the file's headers, or null when there is
     -- no clear winner. Used for detection on upload and to flag a likely wrong object.
     function suggest_object (p_file_id in xxx_fv_files.file_id%type) return varchar2;
@@ -335,7 +342,8 @@ create or replace package body xxx_fv_file_adapter_pkg as
     is
     begin
         update xxx_fv_files
-           set object_code = p_object_code
+           set object_code = p_object_code,
+               is_ignored  = 'N'                    -- assigning an object includes the sheet again
          where file_id = p_file_id;
 
         if sql%rowcount = 0 then
@@ -487,6 +495,42 @@ create or replace package body xxx_fv_file_adapter_pkg as
                staged_on = sysdate
          where file_id = p_file_id;
     end stage_file;
+
+    -- -------------------------------------------------------------------------
+    procedure set_ignored (
+        p_file_id  in xxx_fv_files.file_id%type,
+        p_ignored  in xxx_fv_files.is_ignored%type)
+    is
+    begin
+        if p_ignored = 'Y' then
+            update xxx_fv_files
+               set is_ignored  = 'Y',
+                   object_code = null
+             where file_id = p_file_id;
+            update xxx_fv_file_columns
+               set mapped_column  = null,
+                   mapping_source = null,
+                   ai_confidence  = null,
+                   ai_reason      = null
+             where file_id = p_file_id;
+            clear_staging(p_file_id);
+        else
+            -- same name detection as register_document, then the header fallback
+            update xxx_fv_files f
+               set f.is_ignored  = 'N',
+                   f.object_code = (select min(o.object_code)
+                                      from xxx_fv_objects o
+                                      join xxx_fv_documents d
+                                        on d.document_id = f.document_id
+                                     where o.is_enabled = 'Y'
+                                       and xxx_fv_file_adapter_pkg.normalize_name(
+                                               coalesce(f.sheet_display_name, regexp_replace(d.file_name, '\.[^.]*$', '')))
+                                           in (o.object_code, o.sheet_alias))
+             where f.file_id = p_file_id;
+            detect_by_headers(p_file_id);
+            auto_map(p_file_id);
+        end if;
+    end set_ignored;
 
 end xxx_fv_file_adapter_pkg;
 /

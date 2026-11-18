@@ -289,7 +289,8 @@ confidence is 0..1; use below 0.5 when unsure. reason is one short sentence in E
             on d.document_id = f.document_id
           left join xxx_fv_objects o
             on o.object_code = f.object_code
-         where f.batch_id = p_batch_id;
+         where f.batch_id = p_batch_id
+           and f.is_ignored = 'N';
 
         select json_arrayagg(
                    json_object('object_code' value o.object_code,

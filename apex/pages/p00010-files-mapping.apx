@@ -64,6 +64,9 @@ page 10 (
                        f.object_code,
                        o.object_name,
                        f.row_count,
+                       f.is_ignored,
+                       case f.is_ignored when 'Y' then 'Include' else 'Ignore' end ignore_label,
+                       case f.is_ignored when 'Y' then 'INCLUDE_FILE' else 'IGNORE_FILE' end ignore_request,
                        (select count(*) from xxx_fv_file_columns c
                          where c.file_id = f.file_id and c.mapped_column is not null) mapped_cols,
                        (select count(*) from xxx_fv_file_columns c
@@ -73,7 +76,8 @@ page 10 (
                            and not exists (select 1 from xxx_fv_file_columns c
                                             where c.file_id = f.file_id and c.mapped_column = k.column_name)) missing_required,
                        case
-                           when f.object_code is null then 'Unknown sheet'
+                           when f.is_ignored = 'Y' then 'Ignored (not migration data)'
+                           when f.object_code is null then 'Unknown sheet - assign an object or ignore it'
                            when exists (select 1 from xxx_fv_columns k
                                          where k.object_code = f.object_code and k.is_required = 'Y'
                                            and not exists (select 1 from xxx_fv_file_columns c
@@ -143,6 +147,52 @@ page 10 (
             }
             source {
                 dataType: NUMBER
+            }
+        )
+
+        column IGNORE_LABEL (
+            type: link
+            heading {
+                heading: Ignore
+            }
+            layout {
+                sequence: 25
+            }
+            link {
+                target: {
+                    type: url
+                    url: javascript:apex.page.confirm('#IGNORE_LABEL# this sheet? Ignored sheets are skipped by validation.', {request: '#IGNORE_REQUEST#', set: {'P10_FILE_ID': '#FILE_ID#'}});
+                }
+                linkText: #IGNORE_LABEL#
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column IS_IGNORED (
+            type: hidden
+            heading {
+                heading: Ignored
+            }
+            layout {
+                sequence: 26
+            }
+            source {
+                dataType: STRING
+            }
+        )
+
+        column IGNORE_REQUEST (
+            type: hidden
+            heading {
+                heading: Ignore request
+            }
+            layout {
+                sequence: 27
+            }
+            source {
+                dataType: STRING
             }
         )
 
@@ -277,6 +327,10 @@ page 10 (
                 sequence: 20
             )
 
+            displayColumn IGNORE_LABEL (
+                sequence: 25
+            )
+
             displayColumn FILE_NAME (
                 sequence: 30
             )
@@ -331,6 +385,18 @@ page 10 (
         type: hidden
         layout {
             sequence: 20
+            region: @upload
+            slot: regionBody
+        }
+        settings {
+            valueProtected: false
+        }
+    )
+
+    pageItem P10_FILE_ID (
+        type: hidden
+        layout {
+            sequence: 25
             region: @upload
             slot: regionBody
         }
@@ -465,6 +531,28 @@ page 10 (
         }
         serverSideCondition {
             whenButtonPressed: @upload-files
+        }
+    )
+
+    process ignore-file (
+        name: Ignore or include sheet
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                xxx_fv_batch_api.ignore_file(:P10_FILE_ID, case :REQUEST when 'IGNORE_FILE' then 'Y' else 'N' end, :APP_USER);
+                ```
+        }
+        execution {
+            sequence: 15
+            point: afterSubmit
+        }
+        successMessage {
+            successMessage: Sheet updated. Run Validate to refresh the results.
+        }
+        serverSideCondition {
+            type: requestIsContainedInValue
+            value: IGNORE_FILE,INCLUDE_FILE
         }
     )
 
