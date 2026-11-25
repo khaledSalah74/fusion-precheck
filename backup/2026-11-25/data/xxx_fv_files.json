@@ -1,0 +1,20 @@
+{"results":[{"columns":[{"name":"FILE_ID","type":"NUMBER"},{"name":"BATCH_ID","type":"NUMBER"},{"name":"DOCUMENT_ID","type":"NUMBER"},{"name":"SHEET_DISPLAY_NAME","type":"VARCHAR2"},{"name":"SHEET_FILE_NAME","type":"VARCHAR2"},{"name":"OBJECT_CODE","type":"VARCHAR2"},{"name":"ROW_COUNT","type":"NUMBER"},{"name":"STAGED_ON","type":"DATE"},{"name":"IS_IGNORED","type":"VARCHAR2"}],"items":
+[
+{"file_id":1,"batch_id":1,"document_id":1,"sheet_display_name":"GL Opening Balances","sheet_file_name":"sheet1.xml","object_code":"GL_BALANCES","row_count":17,"staged_on":"17-NOV-26","is_ignored":"N"}
+,{"file_id":2,"batch_id":1,"document_id":1,"sheet_display_name":"Suppliers","sheet_file_name":"sheet2.xml","object_code":"AP_SUPPLIERS","row_count":26,"staged_on":"17-NOV-26","is_ignored":"N"}
+,{"file_id":3,"batch_id":1,"document_id":1,"sheet_display_name":"Open AP Invoices","sheet_file_name":"sheet3.xml","object_code":"AP_INVOICES","row_count":44,"staged_on":"17-NOV-26","is_ignored":"N"}
+,{"file_id":4,"batch_id":1,"document_id":1,"sheet_display_name":"Customers","sheet_file_name":"sheet4.xml","object_code":"AR_CUSTOMERS","is_ignored":"N"}
+,{"file_id":5,"batch_id":1,"document_id":1,"sheet_display_name":"Open AR Invoices","sheet_file_name":"sheet5.xml","object_code":"AR_INVOICES","row_count":31,"staged_on":"17-NOV-26","is_ignored":"N"}
+,{"file_id":6,"batch_id":1,"document_id":1,"sheet_display_name":"Bank Accounts","sheet_file_name":"sheet6.xml","object_code":"CE_BANK_ACCOUNTS","row_count":4,"staged_on":"17-NOV-26","is_ignored":"N"}
+,{"file_id":7,"batch_id":1,"document_id":1,"sheet_display_name":"Open Purchase Orders","sheet_file_name":"sheet7.xml","object_code":"PO_ORDERS","row_count":24,"staged_on":"17-NOV-26","is_ignored":"N"}
+,{"file_id":8,"batch_id":1,"document_id":1,"sheet_display_name":"Notes","sheet_file_name":"sheet8.xml","is_ignored":"N"}
+,{"file_id":9,"batch_id":1,"document_id":2,"object_code":"PR_REQUISITIONS","row_count":20,"staged_on":"17-NOV-26","is_ignored":"N"}
+,{"file_id":26,"batch_id":23,"document_id":23,"sheet_display_name":"GL Opening Balances","sheet_file_name":"sheet1.xml","object_code":"GL_BALANCES","row_count":19,"staged_on":"18-NOV-26","is_ignored":"N"}
+,{"file_id":27,"batch_id":23,"document_id":23,"sheet_display_name":"Suppliers","sheet_file_name":"sheet2.xml","object_code":"AP_SUPPLIERS","row_count":27,"staged_on":"18-NOV-26","is_ignored":"N"}
+,{"file_id":28,"batch_id":23,"document_id":23,"sheet_display_name":"Open AP Invoices","sheet_file_name":"sheet3.xml","object_code":"AP_INVOICES","row_count":65,"staged_on":"18-NOV-26","is_ignored":"N"}
+,{"file_id":29,"batch_id":23,"document_id":23,"sheet_display_name":"Customers","sheet_file_name":"sheet4.xml","object_code":"AR_CUSTOMERS","row_count":25,"staged_on":"18-NOV-26","is_ignored":"N"}
+,{"file_id":30,"batch_id":23,"document_id":23,"sheet_display_name":"Open AR Invoices","sheet_file_name":"sheet5.xml","object_code":"AR_INVOICES","row_count":58,"staged_on":"18-NOV-26","is_ignored":"N"}
+,{"file_id":31,"batch_id":23,"document_id":23,"sheet_display_name":"Bank Accounts","sheet_file_name":"sheet6.xml","object_code":"CE_BANK_ACCOUNTS","row_count":5,"staged_on":"18-NOV-26","is_ignored":"N"}
+,{"file_id":32,"batch_id":23,"document_id":23,"sheet_display_name":"Open Purchase Orders","sheet_file_name":"sheet7.xml","object_code":"PO_ORDERS","row_count":35,"staged_on":"18-NOV-26","is_ignored":"N"}
+,{"file_id":33,"batch_id":23,"document_id":23,"sheet_display_name":"Open Requisitions","sheet_file_name":"sheet8.xml","object_code":"PR_REQUISITIONS","row_count":30,"staged_on":"18-NOV-26","is_ignored":"N"}
+]}]}

@@ -1,0 +1,6 @@
+{"results":[{"columns":[{"name":"DOCUMENT_ID","type":"NUMBER"},{"name":"BATCH_ID","type":"NUMBER"},{"name":"FILE_NAME","type":"VARCHAR2"},{"name":"MIME_TYPE","type":"VARCHAR2"},{"name":"BYTES","type":"NUMBER"},{"name":"UPLOADED_BY","type":"VARCHAR2"},{"name":"UPLOADED_ON","type":"DATE"}],"items":
+[
+{"document_id":1,"batch_id":1,"file_name":"Demo_Migration_Pack.xlsx","mime_type":"application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet","bytes":21648,"uploaded_by":"OTL_INTEG_TST","uploaded_on":"17-NOV-26"}
+,{"document_id":2,"batch_id":1,"file_name":"Open_Requisitions.csv","mime_type":"text\/csv","bytes":2304,"uploaded_by":"OTL_INTEG_TST","uploaded_on":"17-NOV-26"}
+,{"document_id":23,"batch_id":23,"file_name":"Valid_Migration_Pack.xlsx","mime_type":"application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet","bytes":28061,"uploaded_by":"CLAUDE_FIX","uploaded_on":"18-NOV-26"}
+]}]}

@@ -1,0 +1,166 @@
+{"results":[{"columns":[{"name":"FILE_ID","type":"NUMBER"},{"name":"COLUMN_POSITION","type":"NUMBER"},{"name":"FILE_HEADER","type":"VARCHAR2"},{"name":"HEADER_NORM","type":"VARCHAR2"},{"name":"SAMPLE_SHAPE","type":"VARCHAR2"},{"name":"MAPPED_COLUMN","type":"VARCHAR2"},{"name":"MAPPING_SOURCE","type":"VARCHAR2"},{"name":"AI_CONFIDENCE","type":"NUMBER"},{"name":"AI_REASON","type":"VARCHAR2"}],"items":
+[
+{"file_id":1,"column_position":1,"file_header":"Ledger Name","header_norm":"LEDGER_NAME","sample_shape":"KSA Primary Ledger","mapped_column":"LEDGER_NAME","mapping_source":"AUTO"}
+,{"file_id":1,"column_position":2,"file_header":"Period Name","header_norm":"PERIOD_NAME","sample_shape":"Dec-99","mapped_column":"PERIOD_NAME","mapping_source":"AUTO"}
+,{"file_id":1,"column_position":3,"file_header":"Account Combination","header_norm":"ACCOUNT_COMBINATION","sample_shape":"99-999-99999-99","mapped_column":"ACCOUNT_COMBINATION","mapping_source":"AUTO"}
+,{"file_id":1,"column_position":4,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":1,"column_position":5,"file_header":"Entered Dr","header_norm":"ENTERED_DR","sample_shape":"9999999.99","mapped_column":"ENTERED_DR","mapping_source":"AUTO"}
+,{"file_id":1,"column_position":6,"file_header":"Entered Cr","header_norm":"ENTERED_CR","mapped_column":"ENTERED_CR","mapping_source":"AUTO"}
+,{"file_id":1,"column_position":7,"file_header":"Description","header_norm":"DESCRIPTION","sample_shape":"Cash and bank","mapped_column":"DESCRIPTION","mapping_source":"AUTO"}
+,{"file_id":2,"column_position":1,"file_header":"Vendor No","header_norm":"VENDOR_NO","sample_shape":"S9999","mapped_column":"SUPPLIER_NUMBER","mapping_source":"AI","ai_confidence":0.95,"ai_reason":"Vendor number is the supplier identifier."}
+,{"file_id":2,"column_position":2,"file_header":"Vendor Name","header_norm":"VENDOR_NAME","sample_shape":"Al-Rajhi Trading Co.","mapped_column":"SUPPLIER_NAME","mapping_source":"AUTO"}
+,{"file_id":2,"column_position":3,"file_header":"اسم المورد بالعربي","sample_shape":"شركة الراجحي للتجارة","mapped_column":"ALTERNATE_NAME","mapping_source":"AI","ai_confidence":0.95,"ai_reason":"Header means 'supplier name in Arabic', matching the alternate name column."}
+,{"file_id":2,"column_position":4,"file_header":"Supplier Classification","header_norm":"SUPPLIER_CLASSIFICATION","sample_shape":"SUPPLIER","mapped_column":"SUPPLIER_TYPE","mapping_source":"AI","ai_confidence":0.9,"ai_reason":"Classification value matches an allowed supplier type."}
+,{"file_id":2,"column_position":5,"file_header":"VAT Number","header_norm":"VAT_NUMBER","sample_shape":"999999999999999","mapped_column":"TAX_REGISTRATION_NUMBER","mapping_source":"AI","ai_confidence":0.95,"ai_reason":"Fifteen-digit VAT number matches the KSA tax registration format."}
+,{"file_id":2,"column_position":6,"file_header":"Country","header_norm":"COUNTRY","sample_shape":"SA","mapped_column":"COUNTRY","mapping_source":"AI","ai_confidence":0.97,"ai_reason":"Two-letter country code matches the ISO country column."}
+,{"file_id":2,"column_position":7,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":2,"column_position":8,"file_header":"Site Name","header_norm":"SITE_NAME","sample_shape":"MAIN","mapped_column":"SITE_NAME","mapping_source":"AUTO"}
+,{"file_id":2,"column_position":9,"file_header":"Payment Terms","header_norm":"PAYMENT_TERMS","sample_shape":"NET 99","mapped_column":"PAYMENT_TERMS","mapping_source":"AUTO"}
+,{"file_id":2,"column_position":10,"file_header":"Invoice Currency","header_norm":"INVOICE_CURRENCY","sample_shape":"SAR","mapped_column":"INVOICE_CURRENCY","mapping_source":"AUTO"}
+,{"file_id":2,"column_position":11,"file_header":"Bank IBAN","header_norm":"BANK_IBAN","sample_shape":"SA9999999999999999999999","mapped_column":"BANK_IBAN","mapping_source":"AUTO"}
+,{"file_id":2,"column_position":12,"file_header":"Email","header_norm":"EMAIL","sample_shape":"ap@alrajhitradi.com","mapped_column":"EMAIL","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":1,"file_header":"Invoice Number","header_norm":"INVOICE_NUMBER","sample_shape":"INV-99999","mapped_column":"INVOICE_NUMBER","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":2,"file_header":"Supplier Number","header_norm":"SUPPLIER_NUMBER","sample_shape":"S9999","mapped_column":"SUPPLIER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":3,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":4,"file_header":"Invoice Type","header_norm":"INVOICE_TYPE","sample_shape":"STANDARD","mapped_column":"INVOICE_TYPE","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":5,"file_header":"Invoice Date","header_norm":"INVOICE_DATE","sample_shape":"9999-99-99","mapped_column":"INVOICE_DATE","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":6,"file_header":"Invoice Currency","header_norm":"INVOICE_CURRENCY","sample_shape":"SAR","mapped_column":"INVOICE_CURRENCY","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":7,"file_header":"Invoice Amount","header_norm":"INVOICE_AMOUNT","sample_shape":"99999.99","mapped_column":"INVOICE_AMOUNT","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":8,"file_header":"Amount Remaining","header_norm":"AMOUNT_REMAINING","sample_shape":"99999.99","mapped_column":"AMOUNT_REMAINING","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":9,"file_header":"Due Date","header_norm":"DUE_DATE","sample_shape":"9999-99-99","mapped_column":"DUE_DATE","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":10,"file_header":"Liability Account","header_norm":"LIABILITY_ACCOUNT","sample_shape":"99-999-99999-99","mapped_column":"LIABILITY_ACCOUNT","mapping_source":"AUTO"}
+,{"file_id":3,"column_position":11,"file_header":"Description","header_norm":"DESCRIPTION","sample_shape":"Services 9999-99","mapped_column":"DESCRIPTION","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":1,"file_header":"Customer Number","header_norm":"CUSTOMER_NUMBER","sample_shape":"C9999","mapped_column":"CUSTOMER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":2,"file_header":"Customer Name","header_norm":"CUSTOMER_NAME","sample_shape":"Saudi Retail Group","mapped_column":"CUSTOMER_NAME","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":3,"file_header":"Account Type","header_norm":"ACCOUNT_TYPE","sample_shape":"ORGANIZATION","mapped_column":"ACCOUNT_TYPE","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":4,"file_header":"VAT Number","header_norm":"VAT_NUMBER","sample_shape":"999999999999999","mapped_column":"TAX_REGISTRATION_NUMBER","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":5,"file_header":"Country","header_norm":"COUNTRY","sample_shape":"SA","mapped_column":"COUNTRY","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":6,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":7,"file_header":"Bill To Site","header_norm":"BILL_TO_SITE","sample_shape":"HQ","mapped_column":"BILL_TO_SITE","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":8,"file_header":"Payment Terms","header_norm":"PAYMENT_TERMS","sample_shape":"NET 99","mapped_column":"PAYMENT_TERMS","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":9,"file_header":"Credit Limit","header_norm":"CREDIT_LIMIT","sample_shape":"999999","mapped_column":"CREDIT_LIMIT","mapping_source":"AUTO"}
+,{"file_id":4,"column_position":10,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":1,"file_header":"Transaction Number","header_norm":"TRANSACTION_NUMBER","sample_shape":"AR-99999","mapped_column":"TRANSACTION_NUMBER","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":2,"file_header":"Customer Number","header_norm":"CUSTOMER_NUMBER","sample_shape":"C9999","mapped_column":"CUSTOMER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":3,"file_header":"Transaction Type","header_norm":"TRANSACTION_TYPE","sample_shape":"INV","mapped_column":"TRANSACTION_TYPE","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":4,"file_header":"Transaction Date","header_norm":"TRANSACTION_DATE","sample_shape":"9999-99-99","mapped_column":"TRANSACTION_DATE","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":5,"file_header":"Due Date","header_norm":"DUE_DATE","sample_shape":"9999-99-99","mapped_column":"DUE_DATE","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":6,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":7,"file_header":"Original Amount","header_norm":"ORIGINAL_AMOUNT","sample_shape":"999999.99","mapped_column":"ORIGINAL_AMOUNT","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":8,"file_header":"Amount Due","header_norm":"AMOUNT_DUE","sample_shape":"999999.99","mapped_column":"AMOUNT_DUE","mapping_source":"AUTO"}
+,{"file_id":5,"column_position":9,"file_header":"Receivable Account","header_norm":"RECEIVABLE_ACCOUNT","sample_shape":"99-999-99999-99","mapped_column":"RECEIVABLE_ACCOUNT","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":1,"file_header":"Bank Name","header_norm":"BANK_NAME","sample_shape":"Al Rajhi Bank","mapped_column":"BANK_NAME","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":2,"file_header":"Branch Name","header_norm":"BRANCH_NAME","sample_shape":"Olaya Riyadh","mapped_column":"BRANCH_NAME","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":3,"file_header":"Account Name","header_norm":"ACCOUNT_NAME","sample_shape":"Operations SAR","mapped_column":"ACCOUNT_NAME","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":4,"file_header":"Account Number","header_norm":"ACCOUNT_NUMBER","sample_shape":"999999999999","mapped_column":"ACCOUNT_NUMBER","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":5,"file_header":"IBAN","header_norm":"IBAN","sample_shape":"SA9999999999999999999999","mapped_column":"IBAN","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":6,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":7,"file_header":"GL Cash Account","header_norm":"GL_CASH_ACCOUNT","sample_shape":"99-999-99999-99","mapped_column":"GL_CASH_ACCOUNT","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":8,"file_header":"Opening Balance","header_norm":"OPENING_BALANCE","sample_shape":"9999999.99","mapped_column":"OPENING_BALANCE","mapping_source":"AUTO"}
+,{"file_id":6,"column_position":9,"file_header":"Balance Date","header_norm":"BALANCE_DATE","sample_shape":"9999-99-99","mapped_column":"BALANCE_DATE","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":1,"file_header":"PO Number","header_norm":"PO_NUMBER","sample_shape":"PO-9999","mapped_column":"PO_NUMBER","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":2,"file_header":"Line No","header_norm":"LINE_NO","sample_shape":"9","mapped_column":"LINE_NUMBER","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":3,"file_header":"Supplier Number","header_norm":"SUPPLIER_NUMBER","sample_shape":"S9999","mapped_column":"SUPPLIER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":4,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":5,"file_header":"Buyer Email","header_norm":"BUYER_EMAIL","sample_shape":"buyer@client.sa","mapped_column":"BUYER_EMAIL","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":6,"file_header":"Item Description","header_norm":"ITEM_DESCRIPTION","sample_shape":"Annual ERP licence","mapped_column":"ITEM_DESCRIPTION","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":7,"file_header":"Category","header_norm":"CATEGORY","sample_shape":"IT.SOFTWARE","mapped_column":"CATEGORY","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":8,"file_header":"Quantity","header_norm":"QUANTITY","sample_shape":"99","mapped_column":"QUANTITY","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":9,"file_header":"Quantity Received","header_norm":"QUANTITY_RECEIVED","sample_shape":"9","mapped_column":"QUANTITY_RECEIVED","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":10,"file_header":"Unit Price","header_norm":"UNIT_PRICE","sample_shape":"999999.99","mapped_column":"UNIT_PRICE","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":11,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":7,"column_position":12,"file_header":"Need By Date","header_norm":"NEED_BY_DATE","sample_shape":"9999-99-99","mapped_column":"NEED_BY_DATE","mapping_source":"AUTO"}
+,{"file_id":8,"column_position":1,"file_header":"Demo migration pack for the XXX_FV pre-Fusion validation app.","header_norm":"DEMO_MIGRATION_PACK_FOR_THE_XXX_FV_PRE_FUSION_VALIDATION_APP","sample_shape":"Every sheet contains deliberate data problems. Dates are tex"}
+,{"file_id":9,"column_position":1,"file_header":"Requisition Number","header_norm":"REQUISITION_NUMBER","sample_shape":"REQ-9999","mapped_column":"REQUISITION_NUMBER","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":2,"file_header":"Line Number","header_norm":"LINE_NUMBER","sample_shape":"9","mapped_column":"LINE_NUMBER","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":3,"file_header":"Requester Email","header_norm":"REQUESTER_EMAIL","sample_shape":"user9@client.sa","mapped_column":"REQUESTER_EMAIL","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":4,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":5,"file_header":"Item Description","header_norm":"ITEM_DESCRIPTION","sample_shape":"HVAC maintenance visit","mapped_column":"ITEM_DESCRIPTION","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":6,"file_header":"Category","header_norm":"CATEGORY","sample_shape":"FACILITIES.MAINTENANCE","mapped_column":"CATEGORY","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":7,"file_header":"Quantity","header_norm":"QUANTITY","sample_shape":"9","mapped_column":"QUANTITY","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":8,"file_header":"Unit Price","header_norm":"UNIT_PRICE","sample_shape":"9999.99","mapped_column":"UNIT_PRICE","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":9,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":10,"file_header":"Need By Date","header_norm":"NEED_BY_DATE","sample_shape":"9999-99-99","mapped_column":"NEED_BY_DATE","mapping_source":"AUTO"}
+,{"file_id":9,"column_position":11,"file_header":"Approval Status","header_norm":"APPROVAL_STATUS","sample_shape":"APPROVED","mapped_column":"APPROVAL_STATUS","mapping_source":"AUTO"}
+,{"file_id":26,"column_position":1,"file_header":"Ledger Name","header_norm":"LEDGER_NAME","sample_shape":"KSA Primary Ledger","mapped_column":"LEDGER_NAME","mapping_source":"AUTO"}
+,{"file_id":26,"column_position":2,"file_header":"Period Name","header_norm":"PERIOD_NAME","sample_shape":"Dec-99","mapped_column":"PERIOD_NAME","mapping_source":"AUTO"}
+,{"file_id":26,"column_position":3,"file_header":"Account Combination","header_norm":"ACCOUNT_COMBINATION","sample_shape":"99-999-99999-99","mapped_column":"ACCOUNT_COMBINATION","mapping_source":"AUTO"}
+,{"file_id":26,"column_position":4,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":26,"column_position":5,"file_header":"Entered Dr","header_norm":"ENTERED_DR","sample_shape":"9999999.99","mapped_column":"ENTERED_DR","mapping_source":"AUTO"}
+,{"file_id":26,"column_position":6,"file_header":"Entered Cr","header_norm":"ENTERED_CR","mapped_column":"ENTERED_CR","mapping_source":"AUTO"}
+,{"file_id":26,"column_position":7,"file_header":"Description","header_norm":"DESCRIPTION","sample_shape":"Cash and bank balances SAR","mapped_column":"DESCRIPTION","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":1,"file_header":"Supplier Number","header_norm":"SUPPLIER_NUMBER","sample_shape":"SUP-99999","mapped_column":"SUPPLIER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":2,"file_header":"Supplier Name","header_norm":"SUPPLIER_NAME","sample_shape":"Al Majd Office Furniture","mapped_column":"SUPPLIER_NAME","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":3,"file_header":"Alternate Name","header_norm":"ALTERNATE_NAME","sample_shape":"المجد للأثاث المكتبي","mapped_column":"ALTERNATE_NAME","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":4,"file_header":"Supplier Type","header_norm":"SUPPLIER_TYPE","sample_shape":"SUPPLIER","mapped_column":"SUPPLIER_TYPE","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":5,"file_header":"Tax Registration Number","header_norm":"TAX_REGISTRATION_NUMBER","sample_shape":"999999999999999","mapped_column":"TAX_REGISTRATION_NUMBER","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":6,"file_header":"Country","header_norm":"COUNTRY","sample_shape":"SA","mapped_column":"COUNTRY","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":7,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":8,"file_header":"Site Name","header_norm":"SITE_NAME","sample_shape":"MAIN","mapped_column":"SITE_NAME","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":9,"file_header":"Payment Terms","header_norm":"PAYMENT_TERMS","sample_shape":"NET 99","mapped_column":"PAYMENT_TERMS","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":10,"file_header":"Invoice Currency","header_norm":"INVOICE_CURRENCY","sample_shape":"SAR","mapped_column":"INVOICE_CURRENCY","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":11,"file_header":"Bank Iban","header_norm":"BANK_IBAN","sample_shape":"SA9999999999999999999999","mapped_column":"BANK_IBAN","mapping_source":"AUTO"}
+,{"file_id":27,"column_position":12,"file_header":"Email","header_norm":"EMAIL","sample_shape":"almajdofficefu.ap@example.com","mapped_column":"EMAIL","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":1,"file_header":"Invoice Number","header_norm":"INVOICE_NUMBER","sample_shape":"999-INV-9999","mapped_column":"INVOICE_NUMBER","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":2,"file_header":"Supplier Number","header_norm":"SUPPLIER_NUMBER","sample_shape":"SUP-99999","mapped_column":"SUPPLIER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":3,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":4,"file_header":"Invoice Type","header_norm":"INVOICE_TYPE","sample_shape":"STANDARD","mapped_column":"INVOICE_TYPE","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":5,"file_header":"Invoice Date","header_norm":"INVOICE_DATE","sample_shape":"9999-99-99","mapped_column":"INVOICE_DATE","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":6,"file_header":"Invoice Currency","header_norm":"INVOICE_CURRENCY","sample_shape":"SAR","mapped_column":"INVOICE_CURRENCY","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":7,"file_header":"Invoice Amount","header_norm":"INVOICE_AMOUNT","sample_shape":"99999.99","mapped_column":"INVOICE_AMOUNT","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":8,"file_header":"Amount Remaining","header_norm":"AMOUNT_REMAINING","sample_shape":"99999.99","mapped_column":"AMOUNT_REMAINING","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":9,"file_header":"Due Date","header_norm":"DUE_DATE","sample_shape":"9999-99-99","mapped_column":"DUE_DATE","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":10,"file_header":"Liability Account","header_norm":"LIABILITY_ACCOUNT","sample_shape":"99-999-99999-99","mapped_column":"LIABILITY_ACCOUNT","mapping_source":"AUTO"}
+,{"file_id":28,"column_position":11,"file_header":"Description","header_norm":"DESCRIPTION","sample_shape":"Al Majd Office Furniture - Jul 9999","mapped_column":"DESCRIPTION","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":1,"file_header":"Customer Number","header_norm":"CUSTOMER_NUMBER","sample_shape":"CUS-99999","mapped_column":"CUSTOMER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":2,"file_header":"Customer Name","header_norm":"CUSTOMER_NAME","sample_shape":"Al Safwa Retail","mapped_column":"CUSTOMER_NAME","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":3,"file_header":"Account Type","header_norm":"ACCOUNT_TYPE","sample_shape":"ORGANIZATION","mapped_column":"ACCOUNT_TYPE","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":4,"file_header":"Tax Registration Number","header_norm":"TAX_REGISTRATION_NUMBER","sample_shape":"999999999999999","mapped_column":"TAX_REGISTRATION_NUMBER","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":5,"file_header":"Country","header_norm":"COUNTRY","sample_shape":"SA","mapped_column":"COUNTRY","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":6,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":7,"file_header":"Bill To Site","header_norm":"BILL_TO_SITE","sample_shape":"HEAD OFFICE","mapped_column":"BILL_TO_SITE","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":8,"file_header":"Payment Terms","header_norm":"PAYMENT_TERMS","sample_shape":"NET 99","mapped_column":"PAYMENT_TERMS","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":9,"file_header":"Credit Limit","header_norm":"CREDIT_LIMIT","sample_shape":"999999","mapped_column":"CREDIT_LIMIT","mapping_source":"AUTO"}
+,{"file_id":29,"column_position":10,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":1,"file_header":"Transaction Number","header_norm":"TRANSACTION_NUMBER","sample_shape":"AR-99-99999","mapped_column":"TRANSACTION_NUMBER","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":2,"file_header":"Customer Number","header_norm":"CUSTOMER_NUMBER","sample_shape":"CUS-99999","mapped_column":"CUSTOMER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":3,"file_header":"Transaction Type","header_norm":"TRANSACTION_TYPE","sample_shape":"INV","mapped_column":"TRANSACTION_TYPE","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":4,"file_header":"Transaction Date","header_norm":"TRANSACTION_DATE","sample_shape":"9999-99-99","mapped_column":"TRANSACTION_DATE","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":5,"file_header":"Due Date","header_norm":"DUE_DATE","sample_shape":"9999-99-99","mapped_column":"DUE_DATE","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":6,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":7,"file_header":"Original Amount","header_norm":"ORIGINAL_AMOUNT","sample_shape":"9999.99","mapped_column":"ORIGINAL_AMOUNT","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":8,"file_header":"Amount Due","header_norm":"AMOUNT_DUE","sample_shape":"9999.99","mapped_column":"AMOUNT_DUE","mapping_source":"AUTO"}
+,{"file_id":30,"column_position":9,"file_header":"Receivable Account","header_norm":"RECEIVABLE_ACCOUNT","sample_shape":"99-999-99999-99","mapped_column":"RECEIVABLE_ACCOUNT","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":1,"file_header":"Bank Name","header_norm":"BANK_NAME","sample_shape":"Al Rajhi Bank","mapped_column":"BANK_NAME","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":2,"file_header":"Branch Name","header_norm":"BRANCH_NAME","sample_shape":"Olaya Main Branch","mapped_column":"BRANCH_NAME","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":3,"file_header":"Account Name","header_norm":"ACCOUNT_NAME","sample_shape":"Operations Account SAR","mapped_column":"ACCOUNT_NAME","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":4,"file_header":"Account Number","header_norm":"ACCOUNT_NUMBER","sample_shape":"999999999999","mapped_column":"ACCOUNT_NUMBER","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":5,"file_header":"Iban","header_norm":"IBAN","sample_shape":"SA9999999999999999999999","mapped_column":"IBAN","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":6,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":7,"file_header":"Gl Cash Account","header_norm":"GL_CASH_ACCOUNT","sample_shape":"99-999-99999-99","mapped_column":"GL_CASH_ACCOUNT","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":8,"file_header":"Opening Balance","header_norm":"OPENING_BALANCE","sample_shape":"9999999.99","mapped_column":"OPENING_BALANCE","mapping_source":"AUTO"}
+,{"file_id":31,"column_position":9,"file_header":"Balance Date","header_norm":"BALANCE_DATE","sample_shape":"9999-99-99","mapped_column":"BALANCE_DATE","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":1,"file_header":"Po Number","header_norm":"PO_NUMBER","sample_shape":"PO-99-9999","mapped_column":"PO_NUMBER","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":2,"file_header":"Line Number","header_norm":"LINE_NUMBER","sample_shape":"9","mapped_column":"LINE_NUMBER","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":3,"file_header":"Supplier Number","header_norm":"SUPPLIER_NUMBER","sample_shape":"SUP-99999","mapped_column":"SUPPLIER_NUMBER","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":4,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":5,"file_header":"Buyer Email","header_norm":"BUYER_EMAIL","sample_shape":"buyer.ksa@example.com","mapped_column":"BUYER_EMAIL","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":6,"file_header":"Item Description","header_norm":"ITEM_DESCRIPTION","sample_shape":"A9 copy paper - box of 9 reams","mapped_column":"ITEM_DESCRIPTION","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":7,"file_header":"Category","header_norm":"CATEGORY","sample_shape":"OFFICE.SUPPLIES","mapped_column":"CATEGORY","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":8,"file_header":"Quantity","header_norm":"QUANTITY","sample_shape":"99","mapped_column":"QUANTITY","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":9,"file_header":"Quantity Received","header_norm":"QUANTITY_RECEIVED","sample_shape":"9","mapped_column":"QUANTITY_RECEIVED","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":10,"file_header":"Unit Price","header_norm":"UNIT_PRICE","sample_shape":"99.99","mapped_column":"UNIT_PRICE","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":11,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":32,"column_position":12,"file_header":"Need By Date","header_norm":"NEED_BY_DATE","sample_shape":"9999-99-99","mapped_column":"NEED_BY_DATE","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":1,"file_header":"Requisition Number","header_norm":"REQUISITION_NUMBER","sample_shape":"REQ-99-9999","mapped_column":"REQUISITION_NUMBER","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":2,"file_header":"Line Number","header_norm":"LINE_NUMBER","sample_shape":"9","mapped_column":"LINE_NUMBER","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":3,"file_header":"Requester Email","header_norm":"REQUESTER_EMAIL","sample_shape":"employee99@example.com","mapped_column":"REQUESTER_EMAIL","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":4,"file_header":"Business Unit","header_norm":"BUSINESS_UNIT","sample_shape":"KSA BU","mapped_column":"BUSINESS_UNIT","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":5,"file_header":"Item Description","header_norm":"ITEM_DESCRIPTION","sample_shape":"Network switch 99 port","mapped_column":"ITEM_DESCRIPTION","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":6,"file_header":"Category","header_norm":"CATEGORY","sample_shape":"IT.HARDWARE","mapped_column":"CATEGORY","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":7,"file_header":"Quantity","header_norm":"QUANTITY","sample_shape":"9","mapped_column":"QUANTITY","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":8,"file_header":"Unit Price","header_norm":"UNIT_PRICE","sample_shape":"9999.99","mapped_column":"UNIT_PRICE","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":9,"file_header":"Currency","header_norm":"CURRENCY","sample_shape":"SAR","mapped_column":"CURRENCY","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":10,"file_header":"Need By Date","header_norm":"NEED_BY_DATE","sample_shape":"9999-99-99","mapped_column":"NEED_BY_DATE","mapping_source":"AUTO"}
+,{"file_id":33,"column_position":11,"file_header":"Approval Status","header_norm":"APPROVAL_STATUS","sample_shape":"APPROVED","mapped_column":"APPROVAL_STATUS","mapping_source":"AUTO"}
+]}]}
